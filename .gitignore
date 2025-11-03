@@ -1,0 +1,35 @@
+# 🧱 Node.js dependencies
+node_modules/
+**/node_modules/
+
+# 📦 Build outputs
+dist/
+build/
+
+# ⚙️ Logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# 🧩 Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 💻 OS files
+.DS_Store
+Thumbs.db
+
+# 🚀 Vite cache
+.vite/
+vite.config.ts.timestamp-*
+
+# 🔧 TypeScript
+*.tsbuildinfo
+
+# 📸 Misc
+coverage/
