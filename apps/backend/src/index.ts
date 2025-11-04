@@ -1,7 +1,9 @@
-import express from 'express';
+import express , {Request, Response} from 'express';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+
+
 import {
   ServerToClientEvents,
   ClientToServerEvents,
@@ -19,10 +21,15 @@ const io = new Server<
   ServerToClientEvents,  // Eventos que el servidor emite
   InterServerEvents,     // Eventos entre servidores (cluster)
   SocketData             // Datos almacenados por socket
->(server, {});
+>(server, {
+  cors: {
+    origin: process.env.FrONTEND_URL || "http://localhost:5173", 
+    methods: ["GET", "POST"],
+  },  
+});
 const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.send('Hello, World!');
 });
 
