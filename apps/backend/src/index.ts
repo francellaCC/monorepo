@@ -2,6 +2,7 @@ import express , {Request, Response} from 'express';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import cors from 'cors';
 
 
 import {
