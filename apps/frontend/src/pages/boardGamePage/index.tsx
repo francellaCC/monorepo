@@ -34,7 +34,7 @@ const BoardGamePage: React.FC = () => {
                     { id: '2', name: 'Bob', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
                     { id: '3', name: 'Charlie' }
                 ]}></Participants>
-                <Canvas selectedTool={selectedTool} />
+                <Canvas selectedTool={selectedTool ?? 'NONE'} />
                 <ChatComponent></ChatComponent>
                 </div>
 

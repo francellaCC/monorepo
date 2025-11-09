@@ -1,4 +1,3 @@
-import { on } from 'events';
 import React from 'react';
 
 interface PaintToolProps {
@@ -22,7 +21,6 @@ const PaintTool: React.FC<PaintToolProps> = ({ onToolSelect }) => {
             <button className='btn' onClick={() => handleToolSelect('ERASER')}>Eraser</button>
             <button className='btn' onClick={() => handleToolSelect('ERASER_ALL')}>Eraser All</button>
             <button className='btn' onClick={() => handleToolSelect('COLOR_PICKER')}>Color Picker</button>
-            {/* Add paint tool functionality here */}
         </div>
     );
 };
