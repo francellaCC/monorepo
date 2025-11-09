@@ -1,13 +1,27 @@
+import { on } from 'events';
 import React from 'react';
 
 interface PaintToolProps {
-    // Add props as needed
+    onToolSelect?: (tool: string) => void;
 }
 
-const PaintTool: React.FC<PaintToolProps> = () => {
+const PaintTool: React.FC<PaintToolProps> = ({ onToolSelect }) => {
+    const handleToolSelect = (tool: string) => {
+        if (onToolSelect) {
+            onToolSelect(tool);
+            if (tool === 'ERASER_ALL'){
+                setTimeout(() => {
+                    onToolSelect('NONE');
+                }, 10);
+                }
+        }
+    }
     return (
-        <div className="paint-tool">
-            <h2>Paint Tool</h2>
+        <div className="paint-tool gap-2 p-2 border border-gray-300 rounded">
+            <button className='btn' onClick={() => handleToolSelect('BRUSH')}>Brush</button>
+            <button className='btn' onClick={() => handleToolSelect('ERASER')}>Eraser</button>
+            <button className='btn' onClick={() => handleToolSelect('ERASER_ALL')}>Eraser All</button>
+            <button className='btn' onClick={() => handleToolSelect('COLOR_PICKER')}>Color Picker</button>
             {/* Add paint tool functionality here */}
         </div>
     );

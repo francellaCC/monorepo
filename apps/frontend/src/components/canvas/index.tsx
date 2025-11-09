@@ -4,14 +4,22 @@ interface CanvasProps {
     width?: number;
     height?: number;
     className?: string;
+    selectedTool?: string;
 }
 
 const Canvas: React.FC<CanvasProps> = ({ 
     width = 800, 
     height = 600, 
-    className 
+    className ,
+    selectedTool,
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [selectedToolState, setSelectedToolState] = React.useState<string | null>(null);
+
+    useEffect(() => {
+        console.log('Selected tool in Canvas:', selectedTool);
+        setSelectedToolState(selectedTool || null);
+    }, [selectedTool]);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -59,6 +67,20 @@ const Canvas: React.FC<CanvasProps> = ({
         canvas.addEventListener('mouseup', handleMouseUp);
     };
 
+
+    useEffect(() => {
+        if (selectedToolState=='ERASER_ALL')
+            {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return;
+                // Basic setup
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, width, height);
+            }
+        // Implement tool application logic here
+    }, [selectedToolState]);
 
     return (
         <canvas

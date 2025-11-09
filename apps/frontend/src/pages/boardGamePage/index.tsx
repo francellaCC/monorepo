@@ -8,6 +8,13 @@ import WordMistery from '../../components/WordMistery';
 
 const BoardGamePage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const [selectedTool, setSelectedTool] = React.useState<string | null>(null);
+
+    const handleToolSelect = (tool: string) => {
+        console.log('Selected tool:', tool);
+        setSelectedTool(tool);
+        // Implement tool selection logic here
+    };
 
     if (!id) {
         return <div>Invalid Board Game ID</div>;
@@ -27,13 +34,13 @@ const BoardGamePage: React.FC = () => {
                     { id: '2', name: 'Bob', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
                     { id: '3', name: 'Charlie' }
                 ]}></Participants>
-                <Canvas />
+                <Canvas selectedTool={selectedTool} />
                 <ChatComponent></ChatComponent>
                 </div>
 
             </div>
             <div>
-                <PaintTool />
+                <PaintTool onToolSelect={handleToolSelect} />
             </div>
             <p>Welcome to the board game page!</p>
         </div>
