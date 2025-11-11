@@ -12,3 +12,9 @@ export interface IGameRoom {
   status: "waiting" | "playing" | "finished" //estado de la sala
   createdAt: Date
 }
+
+export interface IWord {
+  text: string //la palabra en sí (eg: "apple", "manzana")
+  language: Types.ObjectId //ref a Language
+  difficulty: "easy" | "medium" | "hard" //dificultad de la palabra
+}
