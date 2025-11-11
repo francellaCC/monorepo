@@ -11,11 +11,14 @@ import {
   InterServerEvents,
   SocketData,
 } from "./types/socketEvents";
+import { connectDB } from './config/database';
 
 dotenv.config();
 
 const app = express();
 const server = createServer(app);
+
+connectDB();
 
 const io = new Server<
   ClientToServerEvents,  // Eventos que el servidor escucha
