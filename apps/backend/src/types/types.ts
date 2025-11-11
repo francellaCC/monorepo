@@ -8,7 +8,7 @@ export interface ILanguage {
 export interface IGameRoom {
   code: string //identificador único de la sala
   language: Types.ObjectId //ref a Language
-  player: string[] //array de nombres de jugadores
+  players: string[] //array de nombres de jugadores
   status: "waiting" | "playing" | "finished" //estado de la sala
   createdAt: Date
 }
