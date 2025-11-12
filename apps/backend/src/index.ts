@@ -61,6 +61,11 @@ io.on("connection", (socket) => {
     io.emit("message", `${socket.data.name}: ${msg}`);
   });
 
+  socket.on("sendDrawAction", (drawActions) => {
+    console.log(`🎨 Acción de dibujo de ${socket.data.name}:`, drawActions);
+    socket.broadcast.emit("getDraw", drawActions);
+  });
+
   // Este evento registra cuando un cliente se desconecta: cierra el navegador, pierde la conexión, etc.
   // Sirve para limpiar recursos o notificar a otros usuarios.
   socket.on("disconnect", () => {

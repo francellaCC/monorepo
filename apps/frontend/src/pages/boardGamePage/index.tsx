@@ -1,19 +1,53 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Canvas from '../../components/canvas';
 import { useParams } from 'react-router-dom';
 import ChatComponent from '../../components/chat';
 import PaintTool from '../../components/paintTool';
 import Participants from '../../components/Participants';
 import WordMistery from '../../components/WordMistery';
+import { useSocket } from '../../api/conexion';
+import type { IDrawAction } from './types';
 
 const BoardGamePage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [selectedTool, setSelectedTool] = React.useState<string | null>(null);
+    const socket = useSocket();
+    const [isConnected, setIsConnected] = React.useState(false);
+    const [currentDrawing, setCurrentDrawing] = React.useState<IDrawAction[]>([]);
+
+    const handleReciveDrawAction = (coor:IDrawAction[]) => {
+        console.log("Accion de dibujo recibida:", coor);
+        setCurrentDrawing(coor);
+    }
+
+    const handleEmitDrawAction = (msg: IDrawAction[]) => {
+        console.log("Accion de dibujo emitida:", msg);
+        setCurrentDrawing(msg);
+        socket.sendDrawAction(msg);
+        
+    }
+
+    useEffect(() => {
+        socket.connect().then(() => {
+            socket.onDrawAction(handleReciveDrawAction);
+            setIsConnected(true);
+            console.log("✅ Socket conectado en BoardGamePage");
+        }).catch((error) => {
+            console.error("Error al conectar:", error);
+        });
+
+        return () => {
+            // Limpiar solo el listener de draw action
+            const socketInstance = socket.getSocket();
+            if (socketInstance) {
+                socketInstance.off('drawAction');
+            }
+        };
+    }, []);
 
     const handleToolSelect = (tool: string) => {
         console.log('Selected tool:', tool);
         setSelectedTool(tool);
-        // Implement tool selection logic here
     };
 
     if (!id) {
@@ -34,7 +68,7 @@ const BoardGamePage: React.FC = () => {
                     { id: '2', name: 'Bob', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
                     { id: '3', name: 'Charlie' }
                 ]}></Participants>
-                <Canvas selectedTool={selectedTool ?? 'NONE'} />
+                <Canvas selectedTool={selectedTool ?? 'NONE'} printLineCallback={handleEmitDrawAction} currentUserDrawing={false} newPathToDraw={currentDrawing} />
                 <ChatComponent></ChatComponent>
                 </div>
 

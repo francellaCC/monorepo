@@ -1,65 +1,101 @@
-
-import { io, Socket } from 'socket.io-client';
-import './styles.scss'
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useSocket } from '../../api/conexion';
+import './styles.scss';
 
 function ChatPage() {
-
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const socket = useSocket();
   const [name, setName] = useState("");
   const [joined, setJoined] = useState(false);
   const [players, setPlayers] = useState<{ name: string }[]>([]);
   const [messages, setMessages] = useState<string[]>([]);
   const [message, setMessage] = useState("");
+  const [isConnected, setIsConnected] = useState(false);
 
-
-  useEffect(() => {
-    const newSocket = io(import.meta.env.VITE_API_URL || "http://localhost:3000");
-    setSocket(newSocket);
-
-    newSocket.on("connect", () => {
-      console.log("✅ Conectado al servidor:", newSocket.id);
-    });
-
-    newSocket.on("disconnect", () => {
-      console.log("❌ Desconectado del servidor");
-    });
-
-    // Escuchar eventos del backend
-    newSocket.on("updatePlayers", (playerList) => {
-      console.log("🧍 Lista actualizada:", playerList);
-      setPlayers(playerList);
-    });
-
-    newSocket.on("message", (msg) => {
-      console.log("💬 Mensaje recibido:", msg);
-      setMessages((prev) => [...prev, msg]);
-    });
-
-    // Limpieza al desmontar
-    return () => {
-      newSocket.disconnect();
-    };
+  // Callbacks para eventos de socket
+  const handleUpdatePlayers = useCallback((playerList: { name: string }[]) => {
+    console.log("🧍 Lista actualizada:", playerList);
+    setPlayers(playerList);
   }, []);
 
-  // 2️⃣ Unirse al juego
+  const handleMessage = useCallback((msg: string) => {
+    console.log("Mensaje recivido", msg);
+    setMessages((prev) => [...prev, msg]);
+  }, []);
+
+  const handleConnection = useCallback((connectedSocket: any) => {
+    console.log("✅ Conectado al servidor " + connectedSocket.id);
+    setIsConnected(true);
+  }, []);
+
+  const handleDisconnection = useCallback(() => {
+    console.log("❌ Desconectado del servidor");
+    setIsConnected(false);
+    setJoined(false);
+  }, []);
+
+  useEffect(() => {
+    // Conectar al socket
+    socket.connect().then(() => {
+      console.log("✅ Socket conectado en ChatPage");
+      setIsConnected(true);
+      socket.onUpdatePlayers(handleUpdatePlayers);
+      socket.onMessage(handleMessage);
+      socket.onConnection(handleConnection);
+      socket.onDisconnection(handleDisconnection);
+    }).catch((error) => {
+      console.error("Error al conectar:", error);
+      setIsConnected(false);
+    });
+
+    // Limpieza al desmontar el componente
+    return () => {
+      // Remover todos los listeners de estos eventos específicamente
+      const socketInstance = socket.getSocket();
+      if (socketInstance) {
+        socketInstance.off('updatePlayers');
+        socketInstance.off('message');
+      }
+    };
+  }, []); // Solo ejecutar una vez al montar el componente
+
+  // Unirse al juego
   const handleJoin = () => {
-    if (!socket || !name.trim()) return;
-    socket.emit("joinGame", name);
+    if (!name.trim() || !isConnected) return;
+    socket.joinGame(name);
     setJoined(true);
   };
 
-  // 3️⃣ Enviar mensaje
+  // Enviar mensaje
   const handleSend = () => {
-    if (!socket || !message.trim()) return;
-    socket.emit("sendMessage", message);
+    if (!message.trim() || !isConnected) return;
+    socket.sendMessage(message);
     setMessage("");
   };
 
-  // 4️⃣ Interfaz simple para pruebas
+  // Manejar Enter en los inputs
+  const handleNameKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleJoin();
+    }
+  };
+
+  const handleMessageKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSend();
+    }
+  };
+
   return (
     <div style={{ padding: "1rem", fontFamily: "sans-serif" }}>
       <h1>🎨 Prueba de Socket.IO</h1>
+      
+      {/* Estado de conexión */}
+      <div style={{ marginBottom: "1rem" }}>
+        Estado: {isConnected ? 
+          <span style={{ color: "green" }}>🟢 Conectado</span> : 
+          <span style={{ color: "red" }}>🔴 Desconectado</span>
+        }
+      </div>
 
       {!joined ? (
         <>
@@ -68,12 +104,19 @@ function ChatPage() {
             placeholder="Tu nombre..."
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onKeyPress={handleNameKeyPress}
+            disabled={!isConnected}
           />
-          <button onClick={handleJoin}>Unirse</button>
+          <button 
+            onClick={handleJoin}
+            disabled={!isConnected || !name.trim()}
+          >
+            Unirse
+          </button>
         </>
       ) : (
         <>
-          <h3>Jugadores conectados</h3>
+          <h3>Jugadores conectados ({players.length})</h3>
           <ul>
             {players.map((p, i) => (
               <li key={i}>{p.name}</li>
@@ -87,6 +130,7 @@ function ChatPage() {
               padding: "0.5rem",
               height: "150px",
               overflowY: "auto",
+              marginBottom: "0.5rem"
             }}
           >
             {messages.map((m, i) => (
@@ -94,17 +138,27 @@ function ChatPage() {
             ))}
           </div>
 
-          <input
-            type="text"
-            placeholder="Escribe un mensaje..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
-          <button onClick={handleSend}>Enviar</button>
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <input
+              type="text"
+              placeholder="Escribe un mensaje..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleMessageKeyPress}
+              disabled={!isConnected}
+              style={{ flex: 1 }}
+            />
+            <button 
+              onClick={handleSend}
+              disabled={!isConnected || !message.trim()}
+            >
+              Enviar
+            </button>
+          </div>
         </>
       )}
     </div>
   );
 }
 
-export default ChatPage
+export default ChatPage;
