@@ -9,7 +9,7 @@ import { useSocket } from '../../api/conexion';
 import type { IDrawAction } from './types';
 
 const BoardGamePage: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
+    const { id, user } = useParams<{ id: string , user:string}>();
     const [selectedTool, setSelectedTool] = React.useState<string | null>(null);
     const socket = useSocket();
     const [isConnected, setIsConnected] = React.useState(false);
@@ -66,7 +66,7 @@ const BoardGamePage: React.FC = () => {
                 <Participants participants={[
                     { id: '1', name: 'Alice', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
                     { id: '2', name: 'Bob', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
-                    { id: '3', name: 'Charlie' }
+                    { id: '3', name: user! }
                 ]}></Participants>
                 <Canvas selectedTool={selectedTool ?? 'NONE'} printLineCallback={handleEmitDrawAction} currentUserDrawing={false} newPathToDraw={currentDrawing} />
                 <ChatComponent></ChatComponent>
