@@ -12,6 +12,9 @@ import {
   SocketData,
 } from "./types/socketEvents";
 import { connectDB } from './config/database';
+import languageRouter from './routes/languageRoutes';
+import wordRouter from './routes/wordRoutes';
+import gameRouter from './routes/gameRoomRoutes';
 
 dotenv.config();
 
@@ -19,6 +22,10 @@ const app = express();
 const server = createServer(app);
 
 connectDB();
+
+app.use('/api/languages/',languageRouter)
+app.use("/api/words", wordRouter);
+app.use("/api/rooms", gameRouter);
 
 const io = new Server<
   ClientToServerEvents,  // Eventos que el servidor escucha
