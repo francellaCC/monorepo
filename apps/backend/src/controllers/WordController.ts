@@ -5,6 +5,8 @@ import mongoose, { Types } from "mongoose";
 
 export const createWord = async (req: Request, res: Response) => {
   try {
+
+    console.log("Request Body:", req.body); // Debugging line
     const { text, language, difficulty } = req.body;
 
     const newWord = await Word.create({

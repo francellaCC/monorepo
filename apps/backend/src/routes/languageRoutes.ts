@@ -2,10 +2,10 @@ import { Router } from "express";
 import { createLanguage, getLanguages } from "../controllers/LanguageController";
 
 
-const languageRouter = Router();
+const router = Router();
 
-languageRouter.post("/", createLanguage);
-languageRouter.post("/", getLanguages);
+router.post("/", createLanguage);
+router.get("/", getLanguages);
 
 
-export default languageRouter;
+export default router;

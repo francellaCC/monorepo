@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { createWord, getRandomWords, getWordsByLanguage } from "../controllers/WordController";
 
-const wordRouter = Router();
+const router = Router();
 
-wordRouter.post("/", createWord);
-wordRouter.get("/:languageId", getWordsByLanguage);
-wordRouter.get("/:languageId/random", getRandomWords);
+router.post("/", createWord);
+router.get("/:languageId", getWordsByLanguage);
+router.get("/:languageId/random", getRandomWords);
 
-export default wordRouter;
+export default router;

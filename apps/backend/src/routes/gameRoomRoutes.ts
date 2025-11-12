@@ -2,8 +2,8 @@ import { Router } from "express";
 import { createGameRooom } from "../controllers/GameRoomController";
 
 
-const gameRouter = Router();
+const router = Router();
 
-gameRouter.post("/", createGameRooom);
+router.post("/", createGameRooom);
 
-export default gameRouter;
+export default router;
