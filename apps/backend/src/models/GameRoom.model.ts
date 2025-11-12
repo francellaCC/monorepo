@@ -1,6 +1,14 @@
-import { model, Schema } from "mongoose";
+import { model, Schema, Types } from "mongoose";
+import { IGameRoom } from "../types/types";
 
 
-const gameRoomSchema = new Schema({})
+const gameRoomSchema = new Schema<IGameRoom>({
+  code: { type: String, required: true, unique: true },
+  language: { type: Schema.Types.ObjectId, ref: "Language", required: true },
+  players: { type: [String], default: [] },
+  status: { type: String, default: "waiting" },
+}
 
-export const GameRoom = model("GameRoom", gameRoomSchema)
+  , { timestamps: { createdAt: true, updatedAt: false }})
+
+export const GameRoom = model<IGameRoom>("GameRoom", gameRoomSchema)
