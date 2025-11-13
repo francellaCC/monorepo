@@ -4,7 +4,7 @@
 // VARIABLES
 $bg: #f5f7fb;
 $card: #ffffff;
-$accent: #5569ff;
+$accent: #A194B3;
 $accent-dark: #2f46d6;
 $text: #222831;
 $muted: #6b7280;
@@ -21,7 +21,7 @@ $container-width: 420px;
 
 .login-wrapper {
   @include center;
-  min-height: 60vh;
+  
   padding: 2rem;
  
 }
@@ -29,6 +29,7 @@ $container-width: 420px;
 .login {
   width: 100%;
   max-width: $container-width;
+  max-height: 100%;
   background: $card;
   border-radius: $radius;
   box-shadow: $shadow;
@@ -82,19 +83,21 @@ $container-width: 420px;
 .btn {
   padding: 0.65rem 1rem;
   border-radius: 10px;
+  width: 100%;
   border: none;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1rem;
   box-shadow: none;
 
   &--primary {
-    background: linear-gradient(180deg, $accent 0%, $accent-dark 100%);
-    color: white;
+    background: $accent;
+    color: black;
     box-shadow: 0 8px 20px rgba(85,105,255,0.16);
 
     &:hover {
       box-shadow: 0 10px 25px rgba(85,105,255,0.2);
+      background: #E4D4F8;
     }
   }
 
