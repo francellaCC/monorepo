@@ -18,3 +18,11 @@ export interface IWord {
   language: Types.ObjectId //ref a Language
   difficulty: "easy" | "medium" | "hard" //dificultad de la palabra
 }
+
+export interface IPlayer {
+  id: Types.ObjectId
+  name: string //nombre del jugador
+  score: number //puntuación del jugador
+  ownsRoom: Types.ObjectId | null //ref a GameRoom si el jugador es el creador de la sala
+  createdAt: Date
+}
