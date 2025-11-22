@@ -1,12 +1,39 @@
 export interface ServerToClientEvents {
-  updatePlayers: (players:{name:string}[]) => void;
-  message: (message: string) => void;
+  updatePlayers: (players: { 
+    playerId: string;
+    name: string; 
+    score: number;
+    socketId?: string;
+  }[]) => void;
+
+  message: (data: { from: string; message: string }) => void;
+
   getDraw: (drawActions: any[]) => void;
+
+  roomUpdated: (room: {
+    roomId: string;
+    players: {
+      playerId: string;
+      name: string;
+      score: number;
+    }[]
+  }) => void;
 }
 
 export interface ClientToServerEvents {
-  joinGame: (name: string) => void;
-  sendMessage: (message: string) => void;
+  registerSocket: (data: { playerId: string }) => void;
+  
+  joinGame: (data: { 
+    playerId: string; 
+    name: string; 
+    roomId?: string;
+  }) => void;
+
+  sendMessage: (data: { 
+    playerId: string;
+    message: string;
+  }) => void;
+
   sendDrawAction: (drawActions: any[]) => void;
 }
 
@@ -15,5 +42,7 @@ export interface InterServerEvents {
 }
 
 export interface SocketData {
-  name: string;
+  playerId?: string;
+  name?: string;
+  roomId?: string;
 }
