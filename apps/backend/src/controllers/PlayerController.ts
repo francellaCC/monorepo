@@ -8,6 +8,7 @@ export const createPlayer = async(req: Request, res: Response) => {
     const { name , ownsRoom } = req.body;  
     const newPlayer = await Player.create({ name, ownsRoom , score: 0, createdAt: new Date() });
 
+    console.log("Jugador creado:", newPlayer);
     res.status(201).json(newPlayer);
   } catch (error) {
     res.status(500).json({ message: "Error al crear el jugador", error });
