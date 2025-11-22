@@ -16,6 +16,7 @@ import languageRoutes from "./routes/languageRoutes";
 import wordRoutes from './routes/wordRoutes';
 import gameRoutes from './routes/gameRoomRoutes';
 import playerRoutes from './routes/playerRoutes';
+import { socketHandler } from './sockets';
 
 dotenv.config();
 
@@ -48,43 +49,7 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Hello, World!');
 });
 
-/* Este es el evento global que se ejecuta cada vez que un nuevo cliente se conecta (por ejemplo, un navegador o una app).
-socket representa la conexión específica de ese cliente.
-Cada cliente tiene un identificador único socket.id.
-📘 En palabras simples:
-              “Cuando alguien se conecta, ejecuto esta función y guardo su conexión.” */
-
-io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
-
-  // Eventos personalizados
-
-  // Los mensajes con nombre entre clientes y el servidor se manejan mediante eventos personalizados.
-  socket.on("joinGame", (playerName) => { // Escuchamos el evento "chat message" enviado por el cliente
-    socket.data.name = playerName; // Guardamos el nombre del jugador en los datos del socket
-    console.log(`🎮 Jugador unido: ${playerName}`);
-    io.emit("updatePlayers", [{ name: playerName }]); // Emitimos a todos los clientes el evento "updatePlayers" con la lista de jugadores
-  });
-
-
-  socket.on("sendMessage", (msg) => {
-    console.log(`💬 ${socket.data.name}: ${msg}`);
-    io.emit("message", `${socket.data.name}: ${msg}`);
-  });
-
-  socket.on("sendDrawAction", (drawActions) => {
-    console.log(`🎨 Acción de dibujo de ${socket.data.name}:`, drawActions);
-    socket.broadcast.emit("getDraw", drawActions);
-  });
-
-  // Este evento registra cuando un cliente se desconecta: cierra el navegador, pierde la conexión, etc.
-  // Sirve para limpiar recursos o notificar a otros usuarios.
-  socket.on("disconnect", () => {
-    console.log(`🔴 Cliente desconectado: ${socket.id}`);
-  });
-
-});
-
+socketHandler(io);
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
