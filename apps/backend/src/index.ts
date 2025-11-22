@@ -15,6 +15,7 @@ import { connectDB } from './config/database';
 import languageRoutes from "./routes/languageRoutes";
 import wordRoutes from './routes/wordRoutes';
 import gameRoutes from './routes/gameRoomRoutes';
+import playerRoutes from './routes/playerRoutes';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ connectDB();
 app.use(express.json()); 
 
 app.use("/api/languages", languageRoutes)
+app.use("/api/players", playerRoutes);
 app.use("/api/words", wordRoutes);
 app.use("/api/rooms", gameRoutes);
 
