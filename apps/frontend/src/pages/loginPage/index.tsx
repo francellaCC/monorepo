@@ -1,12 +1,9 @@
 import React from 'react';
 import './styles.css';
 import { useNavigate } from 'react-router-dom';
-import ModalBase from '../../components/Modal';
 import LoginForm from '../../components/loginForm';
-import { Palette, Sparkles } from 'lucide-react';
+import {  Sparkles } from 'lucide-react';
 import { createPlayer } from '../../api/playerService';
-import type { PlayerRequest } from '../../../types';
-import { connect } from 'socket.io-client';
 import { useSocket } from '../../api/conexion';
 
 const LoginPage: React.FC = () => {
@@ -14,8 +11,7 @@ const LoginPage: React.FC = () => {
     const socket = useSocket();
     console.log(import.meta.env.VITE_API_URL);
     const handleCreateRoom = async (name: string) => {
-        // Aquí puedes generar un ID único para la sala
-        // const roomId = Math.random().toString(36).substring(2, 10);
+     
 
         console.log("Creating player:", name);
         // navigate(`/board/${roomId}/${name}`);
@@ -29,13 +25,13 @@ const LoginPage: React.FC = () => {
                 name: name
             });
 
-            console.log("🔥 Respuesta del servidor:", serverResponse);
+            console.log("🔥 Server response:", serverResponse);
 
             localStorage.setItem("socketId", serverResponse.socketId);
             localStorage.setItem("playerId", serverResponse.playerId);
 
         } catch (err) {
-            console.error("❌ Error creando sala:", err);
+            console.error("❌ Error creating room:", err);
         }
     }
     return (
@@ -54,13 +50,7 @@ const LoginPage: React.FC = () => {
                     </div>
                 </div>
             </div>
-            {/* <ModalBase></ModalBase> */}
-
             <LoginForm onCreate={handleCreateRoom} />
-            {/* <button className="btn" onClick={()=>{
-                    handleCreateRoom()
-                }} >Crear Sala</button> */}
-
         </div>
     );
 };

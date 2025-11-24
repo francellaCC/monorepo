@@ -8,7 +8,7 @@ export const playerSocket = (io: Server, socket: Socket) => {
   try {
     const { playerId, name } = data;
 
-    console.log("📥 joinGame recibido:", data);
+    console.log("📥 joinGame received:", data);
 
     // Siempre retornar el documento actualizado
     const updated = await Player.findByIdAndUpdate(
@@ -28,7 +28,7 @@ export const playerSocket = (io: Server, socket: Socket) => {
     socket.data.playerId = updated._id.toString();
     socket.data.name = updated.name;
 
-    console.log(`🧩 Socket registrado para jugador ${updated._id}: ${socket.id}`);
+    console.log(`🧩 Socket registered for player ${updated._id}: ${socket.id}`);
 
     // 👉 Primero responder al cliente que llamó
     callback({
@@ -42,7 +42,7 @@ export const playerSocket = (io: Server, socket: Socket) => {
     io.emit("playerJoined", { playerId: updated._id, name: updated.name });
 
   } catch (error) {
-    console.error("❌ Error registrando socket:", error);
+    console.error("❌ Error registering socket:", error);
     callback({
       ok: false,
       message: "Internal server error",
@@ -51,7 +51,7 @@ export const playerSocket = (io: Server, socket: Socket) => {
 });
 
   socket.on("disconnect", async () => {
-    console.log("❌ Socket desconectado:", socket.id);
+    console.log("❌ Socket disconnected:", socket.id);
 
     await Player.findOneAndUpdate(
       { socketId: socket.id },
