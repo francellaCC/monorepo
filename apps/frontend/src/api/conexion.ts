@@ -10,7 +10,7 @@ class SocketManager {
   private connectionListeners: Array<(socket: SocketType) => void> = [];
   private disconnectionListeners: Array<() => void> = [];
 
-  private constructor() {}
+  private constructor() { }
 
   public static getInstance(): SocketManager {
     if (!SocketManager.instance) {
@@ -97,9 +97,18 @@ class SocketManager {
   }
 
   // Métodos de conveniencia para eventos comunes
-  public joinGame(playerName: string): void {
-    this.socket?.emit('joinGame', playerName);
+  public joinGame(data: { playerId: string; name: string }): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit("joinGame", data, (response: any) => {
+        if (response?.ok) {
+          resolve(response);
+        } else {
+          reject(response);
+        }
+      });
+    });
   }
+
 
   public sendMessage(message: string): void {
     this.socket?.emit('sendMessage', message);
@@ -116,7 +125,7 @@ class SocketManager {
     this.socket?.on('getDraw', callback);
   }
 
-  public onUpdatePlayers(callback: (players: {name: string}[]) => void): void {
+  public onUpdatePlayers(callback: (players: { name: string }[]) => void): void {
     this.socket?.off('updatePlayers');
     this.socket?.on('updatePlayers', callback);
   }
@@ -126,7 +135,7 @@ class SocketManager {
     this.socket?.on('message', callback);
   }
 
-  public offUpdatePlayers(callback: (players: {name: string}[]) => void): void {
+  public offUpdatePlayers(callback: (players: { name: string }[]) => void): void {
     this.socket?.off('updatePlayers', callback);
   }
 
@@ -138,7 +147,7 @@ class SocketManager {
 // Hook personalizado para usar el socket manager
 export function useSocket() {
   const socketManager = SocketManager.getInstance();
-  
+
   return {
     connect: () => socketManager.connect(),
     disconnect: () => socketManager.disconnect(),
@@ -146,11 +155,12 @@ export function useSocket() {
     isConnected: () => socketManager.isConnected(),
     onConnection: (listener: (socket: SocketType) => void) => socketManager.onConnection(listener),
     onDisconnection: (listener: () => void) => socketManager.onDisconnection(listener),
-    joinGame: (name: string) => socketManager.joinGame(name),
+    joinGame: (data: { playerId: string; name: string }) =>
+      socketManager.joinGame(data),
     sendMessage: (message: string) => socketManager.sendMessage(message),
-    onUpdatePlayers: (callback: (players: {name: string}[]) => void) => socketManager.onUpdatePlayers(callback),
+    onUpdatePlayers: (callback: (players: { name: string }[]) => void) => socketManager.onUpdatePlayers(callback),
     onMessage: (callback: (message: string) => void) => socketManager.onMessage(callback),
-    offUpdatePlayers: (callback: (players: {name: string}[]) => void) => socketManager.offUpdatePlayers(callback),
+    offUpdatePlayers: (callback: (players: { name: string }[]) => void) => socketManager.offUpdatePlayers(callback),
     offMessage: (callback: (message: string) => void) => socketManager.offMessage(callback),
     onDrawAction: (callback: (message: IDrawAction[]) => void) => socketManager.onDrawAction(callback),
     sendDrawAction: (msg: IDrawAction[]) => socketManager.sendDrawAction(msg),

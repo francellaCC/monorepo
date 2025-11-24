@@ -3,7 +3,7 @@ import { playerSocket } from "./player.socket";
 
 
 export const socketHandler = (io: Server) => {
-  io.on("connection", (socket) => {
+  io.on("connect", (socket) => {
     console.log("🟢 Cliente conectado:", socket.id);
 
     playerSocket(io, socket);

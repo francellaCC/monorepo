@@ -5,6 +5,6 @@ import { createPlayer } from "../controllers/PlayerController";
 
 const router = Router();
 
-router.post("/", createPlayer);
+router.post("/cretePlayer", createPlayer);
 
 export default router;
