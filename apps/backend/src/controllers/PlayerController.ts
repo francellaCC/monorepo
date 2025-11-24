@@ -5,8 +5,8 @@ import { Player } from "../models/Player.model";
 
 export const createPlayer = async(req: Request, res: Response) => {
   try {
-    const { name , ownsRoom } = req.body;  
-    const newPlayer = await Player.create({ name, ownsRoom , score: 0, createdAt: new Date() });
+    const { name  } = req.body;  
+    const newPlayer = await Player.create({ name, score: 0, createdAt: new Date() });
 
     console.log("Jugador creado:", newPlayer);
     res.status(201).json(newPlayer);

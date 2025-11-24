@@ -18,6 +18,7 @@ import gameRoutes from './routes/gameRoomRoutes';
 import playerRoutes from './routes/playerRoutes';
 import { socketHandler } from './sockets';
 
+
 dotenv.config();
 
 const app = express();
@@ -26,6 +27,14 @@ const server = createServer(app);
 connectDB();
 
 app.use(express.json()); 
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 app.use("/api/languages", languageRoutes)
 app.use("/api/players", playerRoutes);

@@ -3,8 +3,9 @@ import { useState } from "react";
 import "./styles.scss"
 
 
+
 interface LoginFormProps {
-  onCreate: (name: string) => void
+  onCreate: (name:string) => void
 }
 export default function LoginForm({ onCreate }: LoginFormProps) {
 
@@ -21,6 +22,7 @@ export default function LoginForm({ onCreate }: LoginFormProps) {
       return;
     }
 
+    console.log({name})
     onCreate(name)
 
   };

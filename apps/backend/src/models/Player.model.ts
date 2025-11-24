@@ -5,7 +5,7 @@ import { IPlayer } from "../types/types";
 const playerSchema = new Schema<IPlayer>(
   {
     id: { type: Schema.Types.ObjectId },
-    socketId: { type: String, unique: true }, 
+    socketId: { type: String, default: null }, 
     name: { type: String, required: true,  }, 
     score: { type: Number, default: 0 },
     ownsRoom: { type: Schema.Types.ObjectId, ref: 'GameRoom', default: null },
