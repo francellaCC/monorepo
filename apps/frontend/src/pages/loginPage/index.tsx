@@ -2,33 +2,38 @@ import React from 'react';
 import './styles.css';
 import { useNavigate } from 'react-router-dom';
 import LoginForm from '../../components/loginForm';
-import {  Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { createPlayer } from '../../api/playerService';
 import { useSocket } from '../../api/conexion';
+import { createGameRoom } from '../../api/gameRoomService';
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
     const socket = useSocket();
-    console.log(import.meta.env.VITE_API_URL);
     const handleCreateRoom = async (name: string) => {
-     
 
+        const roomId = Math.random().toString(36).substring(2, 10);
         console.log("Creating player:", name);
         // navigate(`/board/${roomId}/${name}`);
         try {
-   
+
+            await socket.connect();
             const res = await createPlayer(name);
-
-
             const serverResponse = await socket.joinGame({
                 playerId: res._id,
                 name: name
             });
 
-            console.log("🔥 Server response:", serverResponse);
+            console.log("Player created with ID:", res);
 
+
+            const result = await createGameRoom({ playerId: res._id, languageCode: "es", code: roomId });
+            console.log("🏁 Room created with ID:", result.room._id);
+            navigate(`/board/${result.room._id}/${name}`);
+            console.log("🔥 Server response:", serverResponse);
             localStorage.setItem("socketId", serverResponse.socketId);
             localStorage.setItem("playerId", serverResponse.playerId);
+
 
         } catch (err) {
             console.error("❌ Error creating room:", err);
