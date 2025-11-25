@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import { playerSocket } from "./player.socket";
+import { gameRoomSocket } from "./gameRoom.socket";
 
 
 export const socketHandler = (io: Server) => {
@@ -7,6 +8,7 @@ export const socketHandler = (io: Server) => {
     console.log("🟢 Cliente conectado:", socket.id);
 
     playerSocket(io, socket);
+    gameRoomSocket(io, socket);
    
   });
 };

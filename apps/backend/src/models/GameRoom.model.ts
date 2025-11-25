@@ -12,6 +12,7 @@ const gameRoomSchema = new Schema<IGameRoom>({
   rounds: { type: Number, default: 1 },
   players: { type: [String], default: [], ref:"Player" },
   status: { type: String, default: "waiting" },
+  owner: { type: Schema.Types.ObjectId, ref: "Player", required: true } 
 }
 
   , { timestamps: { createdAt: true, updatedAt: false }})

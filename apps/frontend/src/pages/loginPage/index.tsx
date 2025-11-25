@@ -29,7 +29,7 @@ const LoginPage: React.FC = () => {
 
             const result = await createGameRoom({ playerId: res._id, languageCode: "es", code: roomId });
             console.log("🏁 Room created with ID:", result.room._id);
-            navigate(`/board/${result.room._id}/${name}`);
+            navigate(`/board/${result.room.code}/${name}`);
             console.log("🔥 Server response:", serverResponse);
             localStorage.setItem("socketId", serverResponse.socketId);
             localStorage.setItem("playerId", serverResponse.playerId);

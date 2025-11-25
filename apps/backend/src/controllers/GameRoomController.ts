@@ -21,8 +21,9 @@ export const createGameRooom = async (req: Request, res: Response) => {
     const newRoom = await GameRoom.create({
       code,
       language: languageId._id,
-      players: [],
-      maxPlayers: 2
+      players: [playerId],
+      maxPlayers: 2,
+      owner: playerId
     });
 
     if (newRoom) {
