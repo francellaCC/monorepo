@@ -25,8 +25,6 @@ const LoginPage: React.FC = () => {
             });
 
             console.log("Player created with ID:", res);
-
-
             const result = await createGameRoom({ playerId: res._id, languageCode: "es", code: roomId });
             console.log("🏁 Room created with ID:", result.room._id);
             navigate(`/board/${result.room.code}/${name}`);

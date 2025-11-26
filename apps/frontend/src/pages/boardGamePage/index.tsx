@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Canvas from '../../components/canvas';
 import { useParams } from 'react-router-dom';
 import ChatComponent from '../../components/chat';
@@ -12,10 +12,26 @@ const BoardGamePage: React.FC = () => {
     const { id, user } = useParams<{ id: string, user: string }>();
     const [selectedTool, setSelectedTool] = React.useState<string | null>(null);
     const socket = useSocket();
-    console.log(id)
     const [isConnected, setIsConnected] = React.useState(false);
     const [currentDrawing, setCurrentDrawing] = React.useState<IDrawAction[]>([]);
 
+    // tools
+    const [currentColor, setCurrentColor] = useState('#000000');
+    const [brushSize, setBrushSize] = useState(5);
+    const [isErasing, setIsErasing] = useState(false);
+
+      const handleErase = () => {
+    setIsErasing(!isErasing);
+    if (!isErasing) {
+      setCurrentColor('#FFFFFF');
+    } else {
+      setCurrentColor('#000000');
+    }
+  };
+
+  const handleClear = () => {
+    // Canvas will handle clearing
+  };
     const handleReciveDrawAction = (coor: IDrawAction[]) => {
         console.log("Accion de dibujo recibida:", coor);
         setCurrentDrawing(coor);
@@ -69,7 +85,7 @@ const BoardGamePage: React.FC = () => {
         <div>
             <h1>Board Game Page:{id}</h1>
 
-            <div className='gap-4 bg-gray-200 p-4'>
+            <div className=''>
                 <div className='w-full'>
                     <WordMistery texto="Example" show={false} underlineCount={7}></WordMistery>
                 </div>
@@ -80,13 +96,30 @@ const BoardGamePage: React.FC = () => {
                         { id: '2', name: 'Bob', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
                         { id: '3', name: user! }
                     ]}></Participants>
-                    <Canvas selectedTool={selectedTool ?? 'NONE'} printLineCallback={handleEmitDrawAction} currentUserDrawing={false} newPathToDraw={currentDrawing} />
+                    <div className="flex-1 flex gap-4 min-h-0">
+                        <div className="flex-1 flex flex-col gap-4 min-w-0">
+                            <div className="flex-1 animate-in fade-in slide-in-from-left duration-500">
+                                <Canvas selectedTool={selectedTool ?? 'NONE'} printLineCallback={handleEmitDrawAction} 
+                                    currentUserDrawing={false} newPathToDraw={currentDrawing} brushSize={brushSize}
+                                    currentColor={currentColor}
+                                    className='w-full h-full bg-white rounded-xl shadow-inner border-4 border-gray-200' />
+                            </div>
+                        </div>
+
+                    </div>
+
                     <ChatComponent></ChatComponent>
                 </div>
 
             </div>
-            <div>
-                <PaintTool onToolSelect={handleToolSelect} />
+            <div className='mt-5'>
+                <PaintTool onToolSelect={handleToolSelect}  currentColor={currentColor}
+                  onColorChange={setCurrentColor}
+                  brushSize={brushSize}
+                  onBrushSizeChange={setBrushSize}
+                  onClear={handleClear}
+                  onErase={handleErase}
+                  isErasing={isErasing}/>
             </div>
             <p>Welcome to the board game page!</p>
         </div>
