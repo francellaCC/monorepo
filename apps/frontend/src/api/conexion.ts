@@ -109,6 +109,19 @@ class SocketManager {
     });
   }
 
+  // New method to join a room
+  public joinRoom(data: { roomCode: string; playerId: string }): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.socket?.emit("joinRoom", data, (response: any) => {
+        if (response?.ok) resolve(response);
+        else reject(response);
+      });
+    });
+  }
+
+  public leaveRoom(roomCode: string) {
+    this.socket?.emit("leaveRoom", { roomCode });
+  }
 
   public sendMessage(message: string): void {
     this.socket?.emit('sendMessage', message);
@@ -157,6 +170,10 @@ export function useSocket() {
     onDisconnection: (listener: () => void) => socketManager.onDisconnection(listener),
     joinGame: (data: { playerId: string; name: string }) =>
       socketManager.joinGame(data),
+    joinRoom: (data: { roomCode: string; playerId: string }) =>
+      socketManager.joinRoom(data),
+    leaveRoom: (roomCode: string) =>
+      socketManager.leaveRoom(roomCode),
     sendMessage: (message: string) => socketManager.sendMessage(message),
     onUpdatePlayers: (callback: (players: { name: string }[]) => void) => socketManager.onUpdatePlayers(callback),
     onMessage: (callback: (message: string) => void) => socketManager.onMessage(callback),

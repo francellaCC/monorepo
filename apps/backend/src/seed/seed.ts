@@ -28,20 +28,20 @@ async function seedDatabase() {
     // 🪶 Palabras para cada idioma
     const words = [
       // Español
-      { text: "gato", language: languages[0]._id, difficulty: "easy" },
-      { text: "perro", language: languages[0]._id, difficulty: "easy" },
-      { text: "bicicleta", language: languages[0]._id, difficulty: "medium" },
-      { text: "astronauta", language: languages[0]._id, difficulty: "hard" },
+      { text: "gato", language: languages[0]._id,wordLength: 4, difficulty: "easy" },
+      { text: "perro", language: languages[0]._id, wordLength: 4,difficulty: "easy" },
+      { text: "bicicleta", language: languages[0]._id,wordLength: 9 , difficulty: "medium" },
+      { text: "astronauta", language: languages[0]._id,wordLength: 10, difficulty: "hard" },
       // Inglés
-      { text: "cat", language: languages[1]._id, difficulty: "easy" },
-      { text: "dog", language: languages[1]._id, difficulty: "easy" },
-      { text: "bicycle", language: languages[1]._id, difficulty: "medium" },
-      { text: "astronaut", language: languages[1]._id, difficulty: "hard" },
+      { text: "cat", language: languages[1]._id,wordLength: 10, difficulty: "easy" },
+      { text: "dog", language: languages[1]._id,wordLength: 10, difficulty: "easy" },
+      { text: "bicycle", language: languages[1]._id,wordLength: 10, difficulty: "medium" },
+      { text: "astronaut", language: languages[1]._id,wordLength: 10, difficulty: "hard" },
       // Francés
-      { text: "chat", language: languages[2]._id, difficulty: "easy" },
-      { text: "chien", language: languages[2]._id, difficulty: "easy" },
-      { text: "vélo", language: languages[2]._id, difficulty: "medium" },
-      { text: "astronaute", language: languages[2]._id, difficulty: "hard" },
+      { text: "chat", language: languages[2]._id,wordLength: 10, difficulty: "easy" },
+      { text: "chien", language: languages[2]._id,wordLength: 10, difficulty: "easy" },
+      { text: "vélo", language: languages[2]._id,wordLength: 10, difficulty: "medium" },
+      { text: "astronaute", language: languages[2]._id,wordLength: 10, difficulty: "hard" },
     ];
 
     await Word.insertMany(words);
