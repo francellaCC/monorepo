@@ -56,11 +56,11 @@ const PaintTool: React.FC<PaintToolProps> = ({ onToolSelect, currentColor,
         handleToolSelect('COLOR_PICKER');
     }
     return (
-        <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4 flex flex-row w-[800px] gap-4">
+        <div className="bg-white rounded-2xl shadow-lg p-4 space-y-4 flex flex-row w-full gap-4">
             {/* Colors */}
             <div>
                 <p className="text-sm text-gray-600 mb-2">Color</p>
-                <div className="grid grid-cols-10 gap-2 grid-rows-2 ">
+                <div className="grid grid-cols-8 gap-2 grid-rows-2 ">
                     {colors.map((color) => (
                         <button
                             key={color}
@@ -75,8 +75,7 @@ const PaintTool: React.FC<PaintToolProps> = ({ onToolSelect, currentColor,
             </div>
 
             {/* Brush Size */}
-            <div>
-
+            <div className="flex-1">
                 <p className="text-sm text-gray-600 mb-2">Brush:{brushSize} px</p>
                 <input
                     type="range"

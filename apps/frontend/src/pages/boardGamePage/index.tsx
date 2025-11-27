@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Canvas from '../../components/canvas';
 import { useParams } from 'react-router-dom';
 import ChatComponent from '../../components/chat';
@@ -7,6 +7,7 @@ import Participants from '../../components/Participants';
 import WordMistery from '../../components/WordMistery';
 import { useSocket } from '../../api/conexion';
 import type { IDrawAction } from './types';
+import { Send } from 'lucide-react';
 
 const BoardGamePage: React.FC = () => {
     const { id, user } = useParams<{ id: string, user: string }>();
@@ -20,18 +21,18 @@ const BoardGamePage: React.FC = () => {
     const [brushSize, setBrushSize] = useState(5);
     const [isErasing, setIsErasing] = useState(false);
 
-      const handleErase = () => {
-    setIsErasing(!isErasing);
-    if (!isErasing) {
-      setCurrentColor('#FFFFFF');
-    } else {
-      setCurrentColor('#000000');
-    }
-  };
+    const handleErase = () => {
+        setIsErasing(!isErasing);
+        if (!isErasing) {
+            setCurrentColor('#FFFFFF');
+        } else {
+            setCurrentColor('#000000');
+        }
+    };
 
-  const handleClear = () => {
-    // Canvas will handle clearing
-  };
+    const handleClear = () => {
+        // Canvas will handle clearing
+    };
     const handleReciveDrawAction = (coor: IDrawAction[]) => {
         console.log("Accion de dibujo recibida:", coor);
         setCurrentDrawing(coor);
@@ -82,47 +83,86 @@ const BoardGamePage: React.FC = () => {
         return <div>Invalid Board Game ID</div>;
     }
     return (
-        <div>
-            <h1>Board Game Page:{id}</h1>
+        <div className=" overflow-hidden flex flex-col  ">
+            <div className="w-full h-full flex flex-col  mt-0">
 
-            <div className=''>
-                <div className='w-full'>
-                    <WordMistery texto="Example" show={false} underlineCount={7}></WordMistery>
+                {/* Top Bar */}
+                <div className="rounded-3xl bg-white shadow-lg p-4 mb-4 flex justify-between items-center">
+                    <div>
+                        <h1 className="font-semibold text-lg">Board Game Page: {id}</h1>
+                        <WordMistery texto="Example" show={false} underlineCount={7} />
+                    </div>
                 </div>
-                <div className='w-full flex '>
 
-                    <Participants participants={[
-                        { id: '1', name: 'Alice', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
-                        { id: '2', name: 'Bob', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
-                        { id: '3', name: user! }
-                    ]}></Participants>
-                    <div className="flex-1 flex gap-4 min-h-0">
-                        <div className="flex-1 flex flex-col gap-4 min-w-0">
-                            <div className="flex-1 animate-in fade-in slide-in-from-left duration-500">
-                                <Canvas selectedTool={selectedTool ?? 'NONE'} printLineCallback={handleEmitDrawAction} 
-                                    currentUserDrawing={false} newPathToDraw={currentDrawing} brushSize={brushSize}
-                                    currentColor={currentColor}
-                                    className='w-full h-full bg-white rounded-xl shadow-inner border-4 border-gray-200' />
+                {/* MAIN AREA */}
+                <div className="flex flex-1 gap-4 min-h-0 ">
+
+                    {/* PARTICIPANTES */}
+                    <div className="w-60 flex flex-col gap-4">
+                        {/* Players List */}
+                        <div className="bg-white rounded-3xl shadow-lg p-4 animate-in fade-in slide-in-from-right duration-300">
+                            <h3 className="text-sm text-gray-600 mb-3">Jugadores</h3>
+                            <div className="space-y-2">
+                                <Participants
+                                    participants={[
+                                        { id: '1', name: 'Alice', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
+                                        { id: '2', name: 'Bob', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
+                                        { id: '3', name: user! },
+                                    ]}
+                                />
                             </div>
                         </div>
 
                     </div>
+                    {/* CANVAS */}
+                    <div className="flex flex-col flex-1 min-w-0 gap-4 ">
 
-                    <ChatComponent></ChatComponent>
+                        <div className="flex-1 min-h-0">
+                            <Canvas
+                                selectedTool={selectedTool ?? 'NONE'}
+                                printLineCallback={handleEmitDrawAction}
+                                currentUserDrawing={false}
+                                newPathToDraw={currentDrawing}
+                                brushSize={brushSize}
+                                currentColor={currentColor}
+                                className="w-full h-full bg-white rounded-xl shadow-inner border-4 border-gray-200"
+                            />
+                        </div>
+
+                        <PaintTool
+                            onToolSelect={handleToolSelect}
+                            currentColor={currentColor}
+                            onColorChange={setCurrentColor}
+                            brushSize={brushSize}
+                            onBrushSizeChange={setBrushSize}
+                            onClear={handleClear}
+                            onErase={handleErase}
+                            isErasing={isErasing}
+                        />
+                    </div>
+
+                    {/* CHAT */}
+                    <div className="w-72 bg-white rounded-3xl shadow-lg p-4 flex flex-col min-h-0">
+                        <h3 className="text-sm text-gray-600 mb-3">Chat</h3>
+                        <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
+                            <ChatComponent />
+                        </div>
+                        <form className="flex gap-2 mt-3">
+                            <input
+                                type="text"
+                                placeholder="Escribe un mensaje..."
+                                className="flex-1 px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-blue-500 text-sm"
+                            />
+                            <button type="submit" className="p-2 rounded-xl bg-gray-200 text-gray-700 cursor-pointer">
+                                <Send className="w-5 h-5" />
+                            </button>
+                        </form>
+                    </div>
                 </div>
-
             </div>
-            <div className='mt-5'>
-                <PaintTool onToolSelect={handleToolSelect}  currentColor={currentColor}
-                  onColorChange={setCurrentColor}
-                  brushSize={brushSize}
-                  onBrushSizeChange={setBrushSize}
-                  onClear={handleClear}
-                  onErase={handleErase}
-                  isErasing={isErasing}/>
-            </div>
-            <p>Welcome to the board game page!</p>
         </div>
+
+
     );
 };
 
