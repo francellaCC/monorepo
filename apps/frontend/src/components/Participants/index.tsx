@@ -12,9 +12,9 @@ interface ParticipantsProps {
 
 const Participants: React.FC<ParticipantsProps> = ({ participants }) => {
     return (
-        <div className="participants-container">
+        <div className="participants-container flex flex-col gap-4">
             {participants.map((participant) => (
-                <div key={participant.id} className="participant-item flex">
+                <div key={participant.id} className="participant-item flex gap-4">
                     <img
                         width={30}
                         src={participant.avatar || 'https://cdn-icons-png.flaticon.com/512/219/219983.png'}
