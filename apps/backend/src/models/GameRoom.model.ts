@@ -8,6 +8,7 @@ const gameRoomSchema = new Schema<IGameRoom>({
   maxPlayers: { type: Number, required: true },
   hints:{ type: String, default: "" },
   drawTime: { type: Number, default: 60 },
+  socketId: { type: String, default: null },
   currentDrawer: { type: Types.ObjectId, ref: "Player", default: null },
   rounds: { type: Number, default: 1 },
   players: { type: [String], default: [], ref:"Player" },
