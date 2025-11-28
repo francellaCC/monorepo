@@ -6,8 +6,9 @@ import "./styles.scss"
 
 interface LoginFormProps {
   onCreate: (name:string) => void
+  text:String
 }
-export default function LoginForm({ onCreate }: LoginFormProps) {
+export default function LoginForm({ onCreate , text}: LoginFormProps) {
 
   const [name, setName] = useState<string>("");
   const [error, setError] = useState<string>("");
@@ -51,7 +52,7 @@ export default function LoginForm({ onCreate }: LoginFormProps) {
           }
           <div className="login__actions">
             <button type="submit" className="btn btn--primary">
-              Crear Sala
+              {text}
             </button>
           </div>
         </form>

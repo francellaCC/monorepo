@@ -7,12 +7,15 @@ import Participants from '../../components/Participants';
 import WordMistery from '../../components/WordMistery';
 import { useSocket } from '../../api/conexion';
 import type { IDrawAction } from './types';
-import { Send } from 'lucide-react';
+import { Play, Send, Share2 } from 'lucide-react';
 
 const BoardGamePage: React.FC = () => {
-    const { id, user } = useParams<{ id: string, user: string }>();
+    const { id } = useParams<{ id: string }>();
+
     const [selectedTool, setSelectedTool] = React.useState<string | null>(null);
+    const [roomStatus, setRoomStatus] = useState<String>("waiting")
     const socket = useSocket();
+     const user = localStorage.getItem("playerId")
     const [isConnected, setIsConnected] = React.useState(false);
     const [currentDrawing, setCurrentDrawing] = React.useState<IDrawAction[]>([]);
 
@@ -44,10 +47,20 @@ const BoardGamePage: React.FC = () => {
         socket.sendDrawAction(msg);
 
     }
+    const handleShareLink=()=>{
+        console.log(`${window.location.origin}/join/${id}`)
+        const link = `${window.location.origin}/join/${id}`
+
+        navigator.clipboard.writeText(link).then(()=>{
+            alert("link copiado")
+        }).catch((err)=>{
+            console.error("Error al copiar:", err)
+        })
+    }
 
     useEffect(() => {
-
         const roomCode = id!;
+       
         const playerId = localStorage.getItem("playerId");
         socket.connect().then(() => {
             socket.joinRoom({ roomCode, playerId: playerId! }).then(() => {
@@ -129,16 +142,41 @@ const BoardGamePage: React.FC = () => {
                             />
                         </div>
 
-                        <PaintTool
-                            onToolSelect={handleToolSelect}
-                            currentColor={currentColor}
-                            onColorChange={setCurrentColor}
-                            brushSize={brushSize}
-                            onBrushSizeChange={setBrushSize}
-                            onClear={handleClear}
-                            onErase={handleErase}
-                            isErasing={isErasing}
-                        />
+                        {
+                            roomStatus != "waiting" ? (
+                                <>
+                                    <PaintTool
+                                        onToolSelect={handleToolSelect}
+                                        currentColor={currentColor}
+                                        onColorChange={setCurrentColor}
+                                        brushSize={brushSize}
+                                        onBrushSizeChange={setBrushSize}
+                                        onClear={handleClear}
+                                        onErase={handleErase}
+                                        isErasing={isErasing}
+                                    />
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex gap-4 animate-in fade-in slide-in-from-bottom duration-500">
+                                        <button
+                                         onClick={handleShareLink}
+                                            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl hover:shadow-xl transform hover:scale-[1.02] transition-all shadow-lg"
+                                        >
+                                            <Share2 className="w-5 h-5" />
+                                            <span>Invitar amigos</span>
+                                        </button>
+
+                                        <button
+                                            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl shadow-lg transition-all 
+                                                bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-xl transform hover:scale-[1.02]"
+                                        >
+                                            <Play className="w-5 h-5" />
+                                            <span>Iniciar partida</span>
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                     </div>
 
                     {/* CHAT */}
