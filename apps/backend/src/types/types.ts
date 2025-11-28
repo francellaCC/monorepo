@@ -13,6 +13,7 @@ export interface IGameRoom {
   currentDrawer: Types.ObjectId | null //ref al jugador que está dibujando actualmente
   rounds: number
   hints:string
+  socketId: string
   owner: Types.ObjectId //ref al jugador que creó la sala
   players: string[] //array de nombres de jugadores
   status: "waiting" | "playing" | "finished" //estado de la sala
