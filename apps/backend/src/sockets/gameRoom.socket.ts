@@ -11,16 +11,11 @@ export const gameRoomSocket = (io: Server, socket: Socket) => {
       }
 
       socket.join(roomCode);
-      if (room.socketId === "") {
-
-        await GameRoom.updateOne(room._id, { socketId: socket.id })
-      }
-
+    
       if (!room.players.includes(playerId)) {
         room.players.push(playerId);
         await room.save();
       }
-
       socket.to(roomCode).emit("playerJoinedRoom", {
         playerId
       });
@@ -36,6 +31,4 @@ export const gameRoomSocket = (io: Server, socket: Socket) => {
       return callback({ ok: false, message: "Internal server error" });
     }
   });
-
-
 }
