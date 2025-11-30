@@ -11,6 +11,6 @@ export const createGameRoom = async ({languageCode, playerId, code}: GameRoomReq
 }
 
 export const getGameRoom =async(code: GameRoomRequest['code']) : Promise<GameRoomResponse>=>{
-   const response = await API.post<GameRoomResponse>("rooms/:roomId", {code} );
+   const response = await API.get<GameRoomResponse>(`rooms/${code}`);
    return response.data
 }

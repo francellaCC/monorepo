@@ -1,17 +1,47 @@
 import { Sparkles } from 'lucide-react'
 import LoginForm from '../../../components/loginForm'
 import '../styles.css';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getGameRoom } from '../../../api/gameRoomService';
+import { useSocket } from '../../../api/conexion';
+import { createPlayer } from '../../../api/playerService';
 
 export default function JoinRoomPage() {
-  const { id } = useParams<{ id: string, user: string }>();
+    const { id } = useParams<{ id: string, user: string }>();
 
-  console.log(id)
-  const handleJoinRoom=()=>{
+    const socket = useSocket();
+    const navigate = useNavigate();
+    console.log(id)
+    const handleJoinRoom = async (name: string) => {
 
-  }
-  return (
-    <div className="login-container items-center justify-center p-4 relative ">
+        const res = await getGameRoom(id!);
+        console.log(res)
+
+        if (res.ok) {
+            try {
+                await socket.connect();
+                const player = await createPlayer(name);
+                console.log("Creating player:", player);
+                const serverResponse = await socket.joinGame({
+                    playerId: player._id,
+                    name: name
+                });
+
+               
+                console.log("🔥 Server response:", serverResponse);
+                localStorage.setItem("socketId", serverResponse.socketId);
+                localStorage.setItem("playerId", serverResponse.playerId);
+
+                navigate(`/board/${id}`);
+            } catch (error) {
+                console.error("Error joining room:", error);
+            }
+        } else {
+            console.error("Room does not exist");
+        }
+    }
+    return (
+        <div className="login-container items-center justify-center p-4 relative ">
 
             <div className="flex items-center justify-center mt-28">
                 <div className="w-full ">
@@ -28,5 +58,5 @@ export default function JoinRoomPage() {
             </div>
             <LoginForm onCreate={handleJoinRoom} text={"Unirse a la sala"} />
         </div>
-  )
+    )
 }
