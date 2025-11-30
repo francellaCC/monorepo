@@ -138,17 +138,19 @@ class SocketManager {
     this.socket?.on('getDraw', callback);
   }
 
-  public onUpdatePlayers(callback: (players: { name: string }[]) => void): void {
-    this.socket?.off('updatePlayers');
-    this.socket?.on('updatePlayers', callback);
-  }
+ public onUpdatePlayers(
+  callback: (data: { players: { id: string; name: string; socketId: string }[] }) => void
+): void {
+    this.socket?.off("updatePlayers");
+    this.socket?.on("updatePlayers", callback);
+}
 
   public onMessage(callback: (message: string) => void): void {
     this.socket?.off('message');
     this.socket?.on('message', callback);
   }
 
-  public offUpdatePlayers(callback: (players: { name: string }[]) => void): void {
+  public offUpdatePlayers(callback: (data: { players: { id: string; name: string; socketId: string }[] }) => void): void {
     this.socket?.off('updatePlayers', callback);
   }
 
@@ -175,9 +177,9 @@ export function useSocket() {
     leaveRoom: (roomCode: string) =>
       socketManager.leaveRoom(roomCode),
     sendMessage: (message: string) => socketManager.sendMessage(message),
-    onUpdatePlayers: (callback: (players: { name: string }[]) => void) => socketManager.onUpdatePlayers(callback),
+    onUpdatePlayers: (callback: (data: { players: { id: string; name: string; socketId: string }[] }) => void) => socketManager.onUpdatePlayers(callback),
     onMessage: (callback: (message: string) => void) => socketManager.onMessage(callback),
-    offUpdatePlayers: (callback: (players: { name: string }[]) => void) => socketManager.offUpdatePlayers(callback),
+    offUpdatePlayers: (callback: (data: { players: { id: string; name: string; socketId: string }[] }) => void) => socketManager.offUpdatePlayers(callback),
     offMessage: (callback: (message: string) => void) => socketManager.offMessage(callback),
     onDrawAction: (callback: (message: IDrawAction[]) => void) => socketManager.onDrawAction(callback),
     sendDrawAction: (msg: IDrawAction[]) => socketManager.sendDrawAction(msg),

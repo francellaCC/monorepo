@@ -1,30 +1,34 @@
 import React from 'react';
 
-interface Participant {
-    id: string;
-    name: string;
-    avatar?: string;
-}
 
 interface ParticipantsProps {
-    participants: Participant[];
+    participants: {
+        id: string;
+        name: string;
+        socketId: string;
+    }[]
 }
 
-const Participants: React.FC<ParticipantsProps> = ({ participants }) => {
+const Participants: React.FC<ParticipantsProps> = ({ participants }: ParticipantsProps) => {
+    console.log("Participants component received:", participants);
     return (
         <div className="participants-container flex flex-col gap-4">
-            {participants.map((participant) => (
-                <div key={participant.id} className="participant-item flex gap-4">
+            {participants.map((player) => (
+                <div key={player.id} className="participant-item flex gap-4">
                     <img
                         width={30}
-                        src={participant.avatar || 'https://cdn-icons-png.flaticon.com/512/219/219983.png'}
-                        alt={`${participant.name}'s avatar`}
+                        src={'https://cdn-icons-png.flaticon.com/512/219/219983.png'}
+                        alt={`${player.name}'s avatar`}
                         className="participant-avatar"
                     />
-                    <span className="participant-name">{participant.name}</span>
+                    <span className="participant-name">{player.name}</span>
+
+
+
                 </div>
             ))}
         </div>
+
     );
 };
 

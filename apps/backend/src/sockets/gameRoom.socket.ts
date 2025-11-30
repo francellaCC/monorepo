@@ -11,13 +11,17 @@ export const gameRoomSocket = (io: Server, socket: Socket) => {
       }
 
       socket.join(roomCode);
-    
+      console.log("Socket joined room:", roomCode, "socketId:", socket.id);
+
+
       if (!room.players.includes(playerId)) {
         room.players.push(playerId);
         await room.save();
       }
-      socket.to(roomCode).emit("playerJoinedRoom", {
-        playerId
+
+      await room.populate("players", "name socketId");
+      io.to(roomCode).emit("updatePlayers", {
+        players: room.players
       });
 
       return callback({

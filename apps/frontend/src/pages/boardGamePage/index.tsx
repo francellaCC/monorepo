@@ -9,15 +9,19 @@ import { useSocket } from '../../api/conexion';
 import type { IDrawAction } from './types';
 import { Play, Send, Share2 } from 'lucide-react';
 
+
 const BoardGamePage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
 
     const [selectedTool, setSelectedTool] = React.useState<string | null>(null);
     const [roomStatus, setRoomStatus] = useState<String>("waiting")
     const socket = useSocket();
-     const user = localStorage.getItem("playerId")
+    // const user = localStorage.getItem("playerId")
+    const [message, setMessage] = useState<string>('');
     const [isConnected, setIsConnected] = React.useState(false);
     const [currentDrawing, setCurrentDrawing] = React.useState<IDrawAction[]>([]);
+    const [players, setPlayers] = useState<{ id: string; name: string; socketId: string }[]>([]);
+
 
     // tools
     const [currentColor, setCurrentColor] = useState('#000000');
@@ -47,37 +51,47 @@ const BoardGamePage: React.FC = () => {
         socket.sendDrawAction(msg);
 
     }
-    const handleShareLink=()=>{
+    const handleShareLink = () => {
         console.log(`${window.location.origin}/join/${id}`)
         const link = `${window.location.origin}/join/${id}`
 
-        navigator.clipboard.writeText(link).then(()=>{
+        navigator.clipboard.writeText(link).then(() => {
             alert("link copiado")
-        }).catch((err)=>{
+        }).catch((err) => {
             console.error("Error al copiar:", err)
         })
     }
 
     useEffect(() => {
         const roomCode = id!;
-       
+
         const playerId = localStorage.getItem("playerId");
+        const run = async () => {
+            const resp = await socket.joinRoom({ roomCode, playerId: playerId! });
+            console.log(resp);
+            if (resp.ok) {
+                setMessage(`Te has unido a la sala`);
+            }
+        };
+
+
         socket.connect().then(() => {
-            socket.joinRoom({ roomCode, playerId: playerId! }).then(() => {
-                console.log(`✅ Joined room: ${roomCode}`);
-            }).catch((error) => {
-                console.error("Error joining room:", error);
+            socket.onUpdatePlayers(({ players }) => {
+                console.log("Players actualizados:", players);
+                setPlayers(players); 
+                setMessage(`: ${players.find(p => p.id === playerId)?.name || 'Desconocido'} se ha unido al juego`);
             });
+            run();
 
             socket.onDrawAction(handleReciveDrawAction);
             setIsConnected(true);
+
             console.log("✅ Socket conectado en BoardGamePage");
         }).catch((error) => {
             console.error("Error al conectar:", error);
         });
 
         return () => {
-
             socket.leaveRoom(id!);
             // Limpiar solo el listener de draw action
             const socketInstance = socket.getSocket();
@@ -114,14 +128,10 @@ const BoardGamePage: React.FC = () => {
                     <div className="w-60 flex flex-col gap-4">
                         {/* Players List */}
                         <div className="bg-white rounded-3xl shadow-lg p-4 animate-in fade-in slide-in-from-right duration-300">
-                            <h3 className="text-sm text-gray-600 mb-3">Jugadores</h3>
+                            <h3 className="text-sm text-gray-600 mb-3">Jugadores {players.length}</h3>
                             <div className="space-y-2">
                                 <Participants
-                                    participants={[
-                                        { id: '1', name: 'Alice', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
-                                        { id: '2', name: 'Bob', avatar: 'https://cdn-icons-png.flaticon.com/512/219/219983.png' },
-                                        { id: '3', name: user! },
-                                    ]}
+                                    participants={players}
                                 />
                             </div>
                         </div>
@@ -160,7 +170,7 @@ const BoardGamePage: React.FC = () => {
                                 <>
                                     <div className="flex gap-4 animate-in fade-in slide-in-from-bottom duration-500">
                                         <button
-                                         onClick={handleShareLink}
+                                            onClick={handleShareLink}
                                             className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl hover:shadow-xl transform hover:scale-[1.02] transition-all shadow-lg"
                                         >
                                             <Share2 className="w-5 h-5" />
@@ -183,7 +193,7 @@ const BoardGamePage: React.FC = () => {
                     <div className="w-72 bg-white rounded-3xl shadow-lg p-4 flex flex-col min-h-0">
                         <h3 className="text-sm text-gray-600 mb-3">Chat</h3>
                         <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
-                            <ChatComponent />
+                            <ChatComponent message={message} />
                         </div>
                         <form className="flex gap-2 mt-3">
                             <input
