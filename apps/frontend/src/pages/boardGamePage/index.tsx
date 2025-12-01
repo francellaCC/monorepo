@@ -8,13 +8,15 @@ import WordMistery from '../../components/WordMistery';
 import { useSocket } from '../../api/conexion';
 import type { IDrawAction } from './types';
 import { Play, Send, Share2 } from 'lucide-react';
+import { getRoomStatus } from '../../api/gameRoomService';
+
 
 
 const BoardGamePage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
 
     const [selectedTool, setSelectedTool] = React.useState<string | null>(null);
-    const [roomStatus, setRoomStatus] = useState<String>("waiting")
+    const [roomStatus, setRoomStatus] = useState<string>("")
     const socket = useSocket();
     // const user = localStorage.getItem("playerId")
     const [message, setMessage] = useState<string>('');
@@ -64,7 +66,12 @@ const BoardGamePage: React.FC = () => {
 
     useEffect(() => {
         const roomCode = id!;
-
+        const getStatus = async () => {
+            const statusResp = await getRoomStatus(roomCode);
+            console.log("Room status fetched:", statusResp.status);
+            setRoomStatus(statusResp.status);
+        };
+        getStatus();
         const playerId = localStorage.getItem("playerId");
         const run = async () => {
             const resp = await socket.joinRoom({ roomCode, playerId: playerId! });
@@ -73,12 +80,10 @@ const BoardGamePage: React.FC = () => {
                 setMessage(`Te has unido a la sala`);
             }
         };
-
-
         socket.connect().then(() => {
             socket.onUpdatePlayers(({ players }) => {
                 console.log("Players actualizados:", players);
-                setPlayers(players); 
+                setPlayers(players);
                 setMessage(`: ${players.find(p => p.id === playerId)?.name || 'Desconocido'} se ha unido al juego`);
             });
             run();
@@ -148,6 +153,7 @@ const BoardGamePage: React.FC = () => {
                                 newPathToDraw={currentDrawing}
                                 brushSize={brushSize}
                                 currentColor={currentColor}
+                                status={roomStatus.toString()}
                                 className="w-full h-full bg-white rounded-xl shadow-inner border-4 border-gray-200"
                             />
                         </div>

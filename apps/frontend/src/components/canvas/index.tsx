@@ -10,6 +10,7 @@ interface CanvasProps {
     currentUserDrawing?: boolean;
     newPathToDraw?: IDrawAction[];
     brushSize?: number;
+    status: string;
     currentColor?: string;
 }
 
@@ -22,6 +23,7 @@ const Canvas: React.FC<CanvasProps> = ({
     currentUserDrawing,
     newPathToDraw,
     brushSize,
+    status,
     currentColor
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -92,15 +94,15 @@ const Canvas: React.FC<CanvasProps> = ({
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, width, height);
         }
-        if(selectedToolState == 'ERASER'){
+        if (selectedToolState == 'ERASER') {
             const canvas = canvasRef.current;
-            if (!canvas) return;    
+            if (!canvas) return;
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
             ctx.strokeStyle = '#FFFFFF'; // Set stroke color to white for erasing
             ctx.lineWidth = brushSize || 5; // Set a larger line width for erasing
         }
-        if(selectedToolState == 'BRUSH'){
+        if (selectedToolState == 'BRUSH') {
             const canvas = canvasRef.current;
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
@@ -109,8 +111,8 @@ const Canvas: React.FC<CanvasProps> = ({
             ctx.lineWidth = brushSize || 5;
 
         }
-        if(selectedToolState == 'COLOR_PICKER'){
-             const canvas = canvasRef.current;
+        if (selectedToolState == 'COLOR_PICKER') {
+            const canvas = canvasRef.current;
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
@@ -147,6 +149,15 @@ const Canvas: React.FC<CanvasProps> = ({
                 className={className}
                 style={{ border: '1px solid #ccc' }}
             />
+
+            {status === 'waiting' && (
+                <div className="absolute inset-0 bg-gray-900/5 rounded-xl flex items-center justify-center pointer-events-none">
+                    <p className="text-gray-500 text-center px-4">
+                        Esperando a que inicie el juego...
+                    </p>
+                </div>
+            )}
+
         </div>
     );
 };
