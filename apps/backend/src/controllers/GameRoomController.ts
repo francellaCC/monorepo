@@ -83,4 +83,47 @@ export const getGameRoom = async (req: Request, res: Response) => {
   }
 }
 
+export const getRoomStatus = async (req: Request, res: Response) => {
+
+  try {
+    const { code } = req.params;  
+    const room = await GameRoom.findOne({ code})
+    if(!room){
+      return  res.status(400).json({message: "Room not Found"})
+    }
+    return res.status(200).json({
+      ok: true,
+      status : room.status
+    })
+  } catch (error: any) {
+    return res.status(500).json({
+      ok: false,
+      message: "Error getting room status", 
+      error: error.message
+    });
+  } 
+}
+
+export const updateRoomStatus = async (req: Request, res: Response) => {
+
+  try {
+    const { code } = req.params;  
+    const { status } = req.body;
+    const room = await GameRoom.findOneAndUpdate({ code}, { status }, { new: true });
+    if(!room){
+      return  res.status(400).json({message: "Room not Found"})
+    }
+    return res.status(200).json({
+      ok: true,
+      status : room.status
+    })
+  } catch (error: any) {
+    return res.status(500).json({
+      ok: false,
+      message: "Error updating room status", 
+      error: error.message
+    });
+  }   
+}
+
 
