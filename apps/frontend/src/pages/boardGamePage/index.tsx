@@ -9,6 +9,7 @@ import { useSocket } from '../../api/conexion';
 import type { IDrawAction } from './types';
 import { Play, Send, Share2 } from 'lucide-react';
 import { getRoomStatus } from '../../api/gameRoomService';
+import type { ChatMessage } from '../../../types';
 
 
 
@@ -19,10 +20,10 @@ const BoardGamePage: React.FC = () => {
     const [roomStatus, setRoomStatus] = useState<string>("")
     const socket = useSocket();
     // const user = localStorage.getItem("playerId")
-    const [message, setMessage] = useState<string>('');
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isConnected, setIsConnected] = React.useState(false);
     const [currentDrawing, setCurrentDrawing] = React.useState<IDrawAction[]>([]);
-    const [players, setPlayers] = useState<{ id: string; name: string; socketId: string }[]>([]);
+    const [playersRoom, setPlayersRoom] = useState<{ _id: string; name: string; socketId: string }[]>([]);
 
 
     // tools
@@ -64,33 +65,66 @@ const BoardGamePage: React.FC = () => {
         })
     }
 
+    const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const input = e.target as HTMLFormElement;
+        console.log("Enviando mensaje:", input.elements.namedItem('msg')?.value.toString());
+        const messageInput = input.elements.namedItem('msg')?.value.toString();
+        const roomCode = id!;
+        if (messageInput) {
+            const playerId = localStorage.getItem("playerId");
+            console.log(roomCode, playerId!, messageInput)
+            socket.sendMessage(roomCode, playerId!, messageInput);
+            setMessages(prevMessages => [...prevMessages, {
+                name: 'Tú',
+                message: messageInput,
+                timestamp: Date.now(),
+                playerId: playerId!
+            }]);
+            input.elements.namedItem('msg')!.value = '';
+        }
+
+    };
+
+
     useEffect(() => {
         const roomCode = id!;
+          const playerId = localStorage.getItem("playerId");
         const getStatus = async () => {
             const statusResp = await getRoomStatus(roomCode);
             console.log("Room status fetched:", statusResp.status);
             setRoomStatus(statusResp.status);
         };
         getStatus();
-        const playerId = localStorage.getItem("playerId");
+      
         const run = async () => {
             const resp = await socket.joinRoom({ roomCode, playerId: playerId! });
             console.log(resp);
             if (resp.ok) {
-                setMessage(`Te has unido a la sala`);
+                setMessages(resp.messages || []);
             }
         };
         socket.connect().then(() => {
             socket.onUpdatePlayers(({ players }) => {
                 console.log("Players actualizados:", players);
-                setPlayers(players);
-                setMessage(`: ${players.find(p => p.id === playerId)?.name || 'Desconocido'} se ha unido al juego`);
+console.log("playerId local:", playerId);
+                setPlayersRoom(players);
+                console.log("name", players.find(p => p._id === playerId)?.name);
+                setMessages(prevMessages => [...prevMessages, {
+                    name: 'Sistema',
+                    message: `: ${players.find(p => p._id === playerId)?.name || 'Desconocido'} se ha unido al juego`,
+                    timestamp: Date.now(),
+                    playerId: 'sistema'
+                }]);
             });
             run();
 
             socket.onDrawAction(handleReciveDrawAction);
             setIsConnected(true);
-
+            socket.onMessage(({ name, message, timestamp }) => {
+                console.log("📥 Mensaje recibido:", name, message);
+                setMessages(prevMessages => [...prevMessages, { name, message, timestamp, playerId: '' }]);
+            });
             console.log("✅ Socket conectado en BoardGamePage");
         }).catch((error) => {
             console.error("Error al conectar:", error);
@@ -133,10 +167,10 @@ const BoardGamePage: React.FC = () => {
                     <div className="w-60 flex flex-col gap-4">
                         {/* Players List */}
                         <div className="bg-white rounded-3xl shadow-lg p-4 animate-in fade-in slide-in-from-right duration-300">
-                            <h3 className="text-sm text-gray-600 mb-3">Jugadores {players.length}</h3>
+                            <h3 className="text-sm text-gray-600 mb-3">Jugadores {playersRoom.length}</h3>
                             <div className="space-y-2">
                                 <Participants
-                                    participants={players}
+                                    participants={playersRoom}
                                 />
                             </div>
                         </div>
@@ -199,12 +233,13 @@ const BoardGamePage: React.FC = () => {
                     <div className="w-72 bg-white rounded-3xl shadow-lg p-4 flex flex-col min-h-0">
                         <h3 className="text-sm text-gray-600 mb-3">Chat</h3>
                         <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
-                            <ChatComponent message={message} />
+                            <ChatComponent messages={messages} />
                         </div>
-                        <form className="flex gap-2 mt-3">
+                        <form className="flex gap-2 mt-3" onSubmit={handleSendMessage}>
                             <input
                                 type="text"
                                 placeholder="Escribe un mensaje..."
+                                name='msg'
                                 className="flex-1 px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-blue-500 text-sm"
                             />
                             <button type="submit" className="p-2 rounded-xl bg-gray-200 text-gray-700 cursor-pointer">

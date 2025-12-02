@@ -23,3 +23,10 @@ export interface GameRoomResponse {
     code: string;
   }
 }
+
+export interface ChatMessage {
+  name: string;
+  message: string;
+  timestamp: number;
+  playerId: string;
+}

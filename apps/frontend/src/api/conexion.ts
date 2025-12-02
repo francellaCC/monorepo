@@ -123,8 +123,19 @@ class SocketManager {
     this.socket?.emit("leaveRoom", { roomCode });
   }
 
-  public sendMessage(message: string): void {
-    this.socket?.emit('sendMessage', message);
+  public sendMessage(roomCode: string, playerId: string, message: string) {
+    console.log("Enviando a backend:", {
+      roomCode,
+      playerId,
+      message
+    });
+    this.socket?.emit("sendMessage", { roomCode, playerId, message }, (resp: any) => {
+      console.log("Respuesta sendMessage:", resp);
+    });
+  }
+  public onMessage(callback: (data: { name: string, message: string, timestamp: number }) => void) {
+    this.socket?.off("newMessage");
+    this.socket?.on("newMessage", callback);
   }
 
   public sendDrawAction(drawActions: IDrawAction[]): void {
@@ -138,24 +149,21 @@ class SocketManager {
     this.socket?.on('getDraw', callback);
   }
 
- public onUpdatePlayers(
-  callback: (data: { players: { id: string; name: string; socketId: string }[] }) => void
-): void {
+  public onUpdatePlayers(
+    callback: (data: { players: { _id: string; name: string; socketId: string }[] }) => void
+  ): void {
     this.socket?.off("updatePlayers");
     this.socket?.on("updatePlayers", callback);
-}
-
-  public onMessage(callback: (message: string) => void): void {
-    this.socket?.off('message');
-    this.socket?.on('message', callback);
   }
 
-  public offUpdatePlayers(callback: (data: { players: { id: string; name: string; socketId: string }[] }) => void): void {
+
+
+  public offUpdatePlayers(callback: (data: { players: { _id: string; name: string; socketId: string }[] }) => void): void {
     this.socket?.off('updatePlayers', callback);
   }
 
-  public offMessage(callback: (message: string) => void): void {
-    this.socket?.off('message', callback);
+  public offMessage(callback: (data: { name: string, message: string, timestamp: number }) => void): void {
+    this.socket?.off('newMessage', callback);
   }
 }
 
@@ -176,11 +184,12 @@ export function useSocket() {
       socketManager.joinRoom(data),
     leaveRoom: (roomCode: string) =>
       socketManager.leaveRoom(roomCode),
-    sendMessage: (message: string) => socketManager.sendMessage(message),
-    onUpdatePlayers: (callback: (data: { players: { id: string; name: string; socketId: string }[] }) => void) => socketManager.onUpdatePlayers(callback),
-    onMessage: (callback: (message: string) => void) => socketManager.onMessage(callback),
-    offUpdatePlayers: (callback: (data: { players: { id: string; name: string; socketId: string }[] }) => void) => socketManager.offUpdatePlayers(callback),
-    offMessage: (callback: (message: string) => void) => socketManager.offMessage(callback),
+    sendMessage: (roomCode: string, playerId: string, message: string) =>
+      socketManager.sendMessage(roomCode, playerId, message),
+    onUpdatePlayers: (callback: (data: { players: { _id: string; name: string; socketId: string }[] }) => void) => socketManager.onUpdatePlayers(callback),
+    onMessage: (callback: (data: { name: string, message: string, timestamp: number }) => void) => socketManager.onMessage(callback),
+    offUpdatePlayers: (callback: (data: { players: { _id: string; name: string; socketId: string }[] }) => void) => socketManager.offUpdatePlayers(callback),
+    offMessage: (callback: (data: { name: string, message: string, timestamp: number }) => void) => socketManager.offMessage(callback),
     onDrawAction: (callback: (message: IDrawAction[]) => void) => socketManager.onDrawAction(callback),
     sendDrawAction: (msg: IDrawAction[]) => socketManager.sendDrawAction(msg),
   };
