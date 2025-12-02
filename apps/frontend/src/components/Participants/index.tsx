@@ -3,7 +3,7 @@ import React from 'react';
 
 interface ParticipantsProps {
     participants: {
-        id: string;
+        _id: string;
         name: string;
         socketId: string;
     }[]
@@ -14,7 +14,7 @@ const Participants: React.FC<ParticipantsProps> = ({ participants }: Participant
     return (
         <div className="participants-container flex flex-col gap-4">
             {participants.map((player) => (
-                <div key={player.id} className="participant-item flex gap-4">
+                <div key={player._id} className="participant-item flex gap-4">
                     <img
                         width={30}
                         src={'https://cdn-icons-png.flaticon.com/512/219/219983.png'}
