@@ -5,7 +5,11 @@ export const drawSocket = (io: Server, socket: Socket) => {
 
   try {
     socket.on("sendDrawAction", ({ roomCode, drawActions }) => {
+
+      
       socket.to(roomCode).emit("getDraw", drawActions);
+      console.log("BACKEND recibe:", drawActions);
+
     });
 
     socket.on("userDrawing", ({ roomCode, playerId }) => {

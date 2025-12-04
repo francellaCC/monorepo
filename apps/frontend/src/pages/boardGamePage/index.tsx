@@ -17,13 +17,15 @@ const BoardGamePage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
 
     const [selectedTool, setSelectedTool] = React.useState<string | null>(null);
-    const [roomStatus, setRoomStatus] = useState<string>("")
+    const [roomStatus, setRoomStatus] = useState<string>("starting");
     const socket = useSocket();
     // const user = localStorage.getItem("playerId")
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isConnected, setIsConnected] = React.useState(false);
     const [currentDrawing, setCurrentDrawing] = React.useState<IDrawAction[]>([]);
     const [playersRoom, setPlayersRoom] = useState<{ _id: string; name: string; socketId: string }[]>([]);
+    const [isSomeoneDrawing, setIsSomeoneDrawing] = useState<string | null>(null);
+
 
 
     // tools
@@ -43,15 +45,19 @@ const BoardGamePage: React.FC = () => {
     const handleClear = () => {
         // Canvas will handle clearing
     };
-    const handleReciveDrawAction = (coor: IDrawAction[]) => {
-        console.log("Accion de dibujo recibida:", coor);
-        setCurrentDrawing(coor);
+    const handleReciveDrawAction = (drawActions: IDrawAction[]) => {
+
+        console.log("FRONT recibe:", drawActions);
+
+        console.log("Accion de dibujo recibida:", drawActions);
+        setCurrentDrawing(drawActions);
     }
 
     const handleEmitDrawAction = (msg: IDrawAction[]) => {
         console.log("Accion de dibujo emitida:", msg);
         setCurrentDrawing(msg);
-        socket.sendDrawAction(msg);
+        socket.sendDrawAction(id!, msg);
+        socket.sendUserDrawing(id!, localStorage.getItem("playerId")!);
 
     }
     const handleShareLink = () => {
@@ -89,14 +95,14 @@ const BoardGamePage: React.FC = () => {
 
     useEffect(() => {
         const roomCode = id!;
-          const playerId = localStorage.getItem("playerId");
-        const getStatus = async () => {
-            const statusResp = await getRoomStatus(roomCode);
-            console.log("Room status fetched:", statusResp.status);
-            setRoomStatus(statusResp.status);
-        };
-        getStatus();
-      
+        const playerId = localStorage.getItem("playerId");
+        // const getStatus = async () => {
+        //     const statusResp = await getRoomStatus(roomCode);
+        //     console.log("Room status fetched:", statusResp.status);
+        //     setRoomStatus(statusResp.status);
+        // };
+        // getStatus();
+
         const run = async () => {
             const resp = await socket.joinRoom({ roomCode, playerId: playerId! });
             console.log(resp);
@@ -106,10 +112,9 @@ const BoardGamePage: React.FC = () => {
         };
         socket.connect().then(() => {
             socket.onUpdatePlayers(({ players }) => {
-                console.log("Players actualizados:", players);
-console.log("playerId local:", playerId);
+
                 setPlayersRoom(players);
-                console.log("name", players.find(p => p._id === playerId)?.name);
+
                 setMessages(prevMessages => [...prevMessages, {
                     name: 'Sistema',
                     message: `: ${players.find(p => p._id === playerId)?.name || 'Desconocido'} se ha unido al juego`,
@@ -118,12 +123,16 @@ console.log("playerId local:", playerId);
                 }]);
             });
             run();
-
-            socket.onDrawAction(handleReciveDrawAction);
-            setIsConnected(true);
             socket.onMessage(({ name, message, timestamp }) => {
                 console.log("📥 Mensaje recibido:", name, message);
                 setMessages(prevMessages => [...prevMessages, { name, message, timestamp, playerId: '' }]);
+            });
+            socket.onDrawAction(handleReciveDrawAction);
+            setIsConnected(true);
+
+            socket.onUserDrawing(({ playerId }) => {
+                console.log("Usuario dibujando:", playerId);
+                setIsSomeoneDrawing(playerId);
             });
             console.log("✅ Socket conectado en BoardGamePage");
         }).catch((error) => {
