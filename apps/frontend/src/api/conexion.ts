@@ -138,9 +138,9 @@ class SocketManager {
     this.socket?.on("newMessage", callback);
   }
 
-  public sendDrawAction(drawActions: IDrawAction[]): void {
+  public sendDrawAction(roomCode: string, drawActions: IDrawAction[]): void {
     console.log('📤 Enviando acción de dibujo:', drawActions);
-    this.socket?.emit('sendDrawAction', drawActions);
+    this.socket?.emit('sendDrawAction', { roomCode, drawActions });
   }
 
   public onDrawAction(callback: (drawActions: IDrawAction[]) => void): void {
@@ -149,6 +149,14 @@ class SocketManager {
     this.socket?.on('getDraw', callback);
   }
 
+  public sendUserDrawing(roomCode: string, playerId: string) {
+    this.socket?.emit("userDrawing", { roomCode, playerId });
+  }
+
+  public onUserDrawing(callback: (data: { playerId: string }) => void) {
+    this.socket?.off("userIsDrawing");
+    this.socket?.on("userIsDrawing", callback);
+  }
   public onUpdatePlayers(
     callback: (data: { players: { _id: string; name: string; socketId: string }[] }) => void
   ): void {
@@ -191,7 +199,9 @@ export function useSocket() {
     offUpdatePlayers: (callback: (data: { players: { _id: string; name: string; socketId: string }[] }) => void) => socketManager.offUpdatePlayers(callback),
     offMessage: (callback: (data: { name: string, message: string, timestamp: number }) => void) => socketManager.offMessage(callback),
     onDrawAction: (callback: (message: IDrawAction[]) => void) => socketManager.onDrawAction(callback),
-    sendDrawAction: (msg: IDrawAction[]) => socketManager.sendDrawAction(msg),
+    sendDrawAction: (roomCode: string, msg: IDrawAction[]) => socketManager.sendDrawAction(roomCode, msg),
+    sendUserDrawing: (roomCode: string, playerId: string) => socketManager.sendUserDrawing(roomCode, playerId),
+    onUserDrawing: (callback: (data: { playerId: string }) => void) => socketManager.onUserDrawing(callback),
   };
 }
 

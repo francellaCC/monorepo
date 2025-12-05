@@ -67,7 +67,14 @@ const Canvas: React.FC<CanvasProps> = ({
         const handleMouseMove = (e: MouseEvent) => {
             const newX = e.clientX - rect.left;
             const newY = e.clientY - rect.top;
-            coorRecord.push({ x: newX, y: newY });
+            coorRecord.push({
+                x: newX,
+                y: newY,
+                color: currentColor || '#000000',
+                brushSize: brushSize || 5,
+                tool: selectedToolState || 'BRUSH',
+                isStart: coorRecord.length === 0
+            });
             ctx.lineTo(newX, newY);
             ctx.stroke();
         };
@@ -129,8 +136,12 @@ const Canvas: React.FC<CanvasProps> = ({
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
 
+            const first = newPathToDraw[0];
+            ctx.strokeStyle = first.color;
+            ctx.lineWidth = first.brushSize;
+
             ctx.beginPath();
-            ctx.moveTo(newPathToDraw[0].x, newPathToDraw[0].y);
+            ctx.moveTo(first.x, first.y);
             newPathToDraw.forEach(point => {
                 ctx.lineTo(point.x, point.y);
             });
