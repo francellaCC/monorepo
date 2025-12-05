@@ -6,7 +6,7 @@ export const drawSocket = (io: Server, socket: Socket) => {
   try {
     socket.on("sendDrawAction", ({ roomCode, drawActions }) => {
 
-      
+
       socket.to(roomCode).emit("getDraw", drawActions);
       console.log("BACKEND recibe:", drawActions);
 
@@ -14,6 +14,15 @@ export const drawSocket = (io: Server, socket: Socket) => {
 
     socket.on("userDrawing", ({ roomCode, playerId }) => {
       socket.to(roomCode).emit("userIsDrawing", { playerId });
+    });
+
+    socket.on("eraseLine", ({ roomCode, lineId }) => {
+      socket.to(roomCode).emit("lineErased", { lineId });
+    });
+
+ 
+    socket.on("clearBoard", ({ roomCode }) => {
+      socket.to(roomCode).emit("boardCleared");
     });
 
     socket.on("disconnect", () => {
