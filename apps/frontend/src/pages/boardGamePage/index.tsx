@@ -25,6 +25,7 @@ const BoardGamePage: React.FC = () => {
     const [currentDrawing, setCurrentDrawing] = React.useState<IDrawAction[]>([]);
     const [playersRoom, setPlayersRoom] = useState<{ _id: string; name: string; socketId: string }[]>([]);
     const [isSomeoneDrawing, setIsSomeoneDrawing] = useState<string | null>(null);
+    const [allLines, setAllLines] = useState<IDrawAction[][]>([]);
 
 
 
@@ -34,9 +35,11 @@ const BoardGamePage: React.FC = () => {
     const [isErasing, setIsErasing] = useState(false);
 
     const handleErase = () => {
-        setIsErasing(!isErasing);
+setIsErasing(!isErasing);
         if (!isErasing) {
             setCurrentColor('#FFFFFF');
+            // emitir al backend
+
         } else {
             setCurrentColor('#000000');
         }
@@ -51,6 +54,7 @@ const BoardGamePage: React.FC = () => {
 
         console.log("Accion de dibujo recibida:", drawActions);
         setCurrentDrawing(drawActions);
+        setAllLines(prev => [...prev, drawActions]);
     }
 
     const handleEmitDrawAction = (msg: IDrawAction[]) => {
@@ -134,6 +138,13 @@ const BoardGamePage: React.FC = () => {
                 console.log("Usuario dibujando:", playerId);
                 setIsSomeoneDrawing(playerId);
             });
+            socket.onLineErased(({ lineId }) => {
+                setAllLines(prev => prev.filter(line => line.length === 0 ? false : line[0].lineId !== lineId));
+            });
+
+            socket.onBoardCleared(() => {
+                setAllLines([]);
+            });
             console.log("✅ Socket conectado en BoardGamePage");
         }).catch((error) => {
             console.error("Error al conectar:", error);
@@ -152,6 +163,17 @@ const BoardGamePage: React.FC = () => {
     const handleToolSelect = (tool: string) => {
         console.log('Selected tool:', tool);
         setSelectedTool(tool);
+    };
+    const handleEraseLine = (lineId: string) => {
+        // emitir al backend
+        socket.eraseLine(id!, lineId);
+        // optimísticamente quitar local
+        setAllLines(prev => prev.filter(line => line[0].lineId !== lineId));
+    };
+
+    const handleClearBoard = () => {
+        socket.clearBoard(id!);
+        setAllLines([]);
     };
 
     if (!id) {
@@ -192,6 +214,9 @@ const BoardGamePage: React.FC = () => {
                             <Canvas
                                 selectedTool={selectedTool ?? 'NONE'}
                                 printLineCallback={handleEmitDrawAction}
+
+                                allLines={allLines}
+                                setIsErasing={setIsErasing}
                                 currentUserDrawing={false}
                                 newPathToDraw={currentDrawing}
                                 brushSize={brushSize}
@@ -210,8 +235,8 @@ const BoardGamePage: React.FC = () => {
                                         onColorChange={setCurrentColor}
                                         brushSize={brushSize}
                                         onBrushSizeChange={setBrushSize}
-                                        onClear={handleClear}
-                                        onErase={handleErase}
+                                        onClear={handleClearBoard}
+                                        onEraseLine={handleErase}
                                         isErasing={isErasing}
                                     />
                                 </>

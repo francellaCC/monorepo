@@ -8,7 +8,7 @@ interface PaintToolProps {
     brushSize: number;
     onBrushSizeChange: (size: number) => void;
     onClear: () => void;
-    onErase: () => void;
+    onEraseLine:  () => void;
     isErasing: boolean;
 }
 
@@ -37,15 +37,19 @@ const PaintTool: React.FC<PaintToolProps> = ({ onToolSelect, currentColor,
     brushSize,
     onBrushSizeChange,
     onClear,
-    onErase,
+ onEraseLine,
     isErasing }) => {
     const handleToolSelect = (tool: string) => {
         if (onToolSelect) {
             onToolSelect(tool);
             if (tool === 'ERASER_ALL') {
+                onClear();
                 setTimeout(() => {
                     onToolSelect('NONE');
                 }, 10);
+            }else if (tool === 'ERASER') {
+                // nothing more to do here for now
+                onEraseLine()
             }
         }
     }
