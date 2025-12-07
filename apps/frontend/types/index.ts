@@ -23,6 +23,11 @@ export interface GameRoomResponse {
     code: string;
   }
 }
+export interface GameRoomStatusResponse {
+  ok: boolean;
+  status: string;
+  owner: string;
+}
 
 export interface ChatMessage {
   name: string;

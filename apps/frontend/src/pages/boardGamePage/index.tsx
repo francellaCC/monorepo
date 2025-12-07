@@ -17,15 +17,16 @@ const BoardGamePage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
 
     const [selectedTool, setSelectedTool] = React.useState<string | null>(null);
-    const [roomStatus, setRoomStatus] = useState<string>("starting");
+    const [roomStatus, setRoomStatus] = useState<string>("waiting");
     const socket = useSocket();
-    // const user = localStorage.getItem("playerId")
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isConnected, setIsConnected] = React.useState(false);
     const [currentDrawing, setCurrentDrawing] = React.useState<IDrawAction[]>([]);
     const [playersRoom, setPlayersRoom] = useState<{ _id: string; name: string; socketId: string }[]>([]);
     const [isSomeoneDrawing, setIsSomeoneDrawing] = useState<string | null>(null);
     const [allLines, setAllLines] = useState<IDrawAction[][]>([]);
+    const [isOwner, setIsOwner] = useState(false);
+    const playerId = localStorage.getItem("playerId");
 
 
 
@@ -35,7 +36,7 @@ const BoardGamePage: React.FC = () => {
     const [isErasing, setIsErasing] = useState(false);
 
     const handleErase = () => {
-setIsErasing(!isErasing);
+        setIsErasing(!isErasing);
         if (!isErasing) {
             setCurrentColor('#FFFFFF');
             // emitir al backend
@@ -45,9 +46,6 @@ setIsErasing(!isErasing);
         }
     };
 
-    const handleClear = () => {
-        // Canvas will handle clearing
-    };
     const handleReciveDrawAction = (drawActions: IDrawAction[]) => {
 
         console.log("FRONT recibe:", drawActions);
@@ -77,12 +75,14 @@ setIsErasing(!isErasing);
 
     const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const input = e.target as HTMLFormElement;
-        console.log("Enviando mensaje:", input.elements.namedItem('msg')?.value.toString());
-        const messageInput = input.elements.namedItem('msg')?.value.toString();
+        const form = e.currentTarget;
+        const msgElement = form.elements.namedItem('msg') as HTMLInputElement | null;
+        const rawValue = msgElement?.value ?? '';
+        console.log("Enviando mensaje:", rawValue);
+        const messageInput = rawValue.toString().trim();
         const roomCode = id!;
         if (messageInput) {
-            const playerId = localStorage.getItem("playerId");
+
             console.log(roomCode, playerId!, messageInput)
             socket.sendMessage(roomCode, playerId!, messageInput);
             setMessages(prevMessages => [...prevMessages, {
@@ -91,7 +91,7 @@ setIsErasing(!isErasing);
                 timestamp: Date.now(),
                 playerId: playerId!
             }]);
-            input.elements.namedItem('msg')!.value = '';
+            if (msgElement) msgElement.value = '';
         }
 
     };
@@ -99,13 +99,14 @@ setIsErasing(!isErasing);
 
     useEffect(() => {
         const roomCode = id!;
-        const playerId = localStorage.getItem("playerId");
-        // const getStatus = async () => {
-        //     const statusResp = await getRoomStatus(roomCode);
-        //     console.log("Room status fetched:", statusResp.status);
-        //     setRoomStatus(statusResp.status);
-        // };
-        // getStatus();
+
+        const getStatus = async () => {
+            const statusResp = await getRoomStatus(roomCode);
+            console.log("Room status fetched:", statusResp.status);
+            setRoomStatus(statusResp.status);
+            setIsOwner(statusResp.owner === playerId);
+        };
+        getStatus();
 
         const run = async () => {
             const resp = await socket.joinRoom({ roomCode, playerId: playerId! });
@@ -137,6 +138,12 @@ setIsErasing(!isErasing);
             socket.onUserDrawing(({ playerId }) => {
                 console.log("Usuario dibujando:", playerId);
                 setIsSomeoneDrawing(playerId);
+                setMessages(prevMessages => [...prevMessages, {
+                    name: '',
+                    message: `: ${playersRoom.find(p => p._id === playerId)?.name || 'Alguien'} está dibujando...`,
+                    timestamp: Date.now(),
+                    playerId: 'sistema'
+                }]);
             });
             socket.onLineErased(({ lineId }) => {
                 setAllLines(prev => prev.filter(line => line.length === 0 ? false : line[0].lineId !== lineId));
@@ -163,12 +170,6 @@ setIsErasing(!isErasing);
     const handleToolSelect = (tool: string) => {
         console.log('Selected tool:', tool);
         setSelectedTool(tool);
-    };
-    const handleEraseLine = (lineId: string) => {
-        // emitir al backend
-        socket.eraseLine(id!, lineId);
-        // optimísticamente quitar local
-        setAllLines(prev => prev.filter(line => line[0].lineId !== lineId));
     };
 
     const handleClearBoard = () => {
@@ -242,36 +243,45 @@ setIsErasing(!isErasing);
                                 </>
                             ) : (
                                 <>
-                                    <div className="flex gap-4 animate-in fade-in slide-in-from-bottom duration-500">
-                                        <button
-                                            onClick={handleShareLink}
-                                            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl hover:shadow-xl transform hover:scale-[1.02] transition-all shadow-lg"
-                                        >
-                                            <Share2 className="w-5 h-5" />
-                                            <span>Invitar amigos</span>
-                                        </button>
+                                    {
+                                        isOwner && (
+                                            <div className="flex gap-4 animate-in fade-in slide-in-from-bottom duration-500">
+                                                <button
+                                                    onClick={handleShareLink}
+                                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl hover:shadow-xl transform hover:scale-[1.02] transition-all shadow-lg"
+                                                >
+                                                    <Share2 className="w-5 h-5" />
+                                                    <span>Invitar amigos</span>
+                                                </button>
 
-                                        <button
-                                            className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl shadow-lg transition-all 
+                                                <button
+                                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl shadow-lg transition-all 
                                                 bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:shadow-xl transform hover:scale-[1.02]"
-                                        >
-                                            <Play className="w-5 h-5" />
-                                            <span>Iniciar partida</span>
-                                        </button>
-                                    </div>
+                                                >
+                                                    <Play className="w-5 h-5" />
+                                                    <span>Iniciar partida</span>
+                                                </button>
+                                            </div>
+                                        )
+                                    }
                                 </>
                             )}
                     </div>
 
                     {/* CHAT */}
-                    <div className="w-72 bg-white rounded-3xl shadow-lg p-4 flex flex-col min-h-0">
+                    <div className="w-72 h-[600px] bg-white rounded-3xl shadow-lg p-4 flex flex-col ">
                         <h3 className="text-sm text-gray-600 mb-3">Chat</h3>
-                        <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
+                        <div className=" flex-1 overflow-y-scroll overflow-x-hidden">
                             <ChatComponent messages={messages} />
                         </div>
                         <form className="flex gap-2 mt-3" onSubmit={handleSendMessage}>
                             <input
                                 type="text"
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                        handleSendMessage(e.target as unknown as React.FormEvent<HTMLFormElement>);
+                                    }
+                                }}
                                 placeholder="Escribe un mensaje..."
                                 name='msg'
                                 className="flex-1 px-4 py-2 rounded-xl border-2 border-gray-200 focus:border-blue-500 text-sm"

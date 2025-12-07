@@ -93,7 +93,8 @@ export const getRoomStatus = async (req: Request, res: Response) => {
     }
     return res.status(200).json({
       ok: true,
-      status : room.status
+      status : room.status,
+      owner: room.owner
     })
   } catch (error: any) {
     return res.status(500).json({
