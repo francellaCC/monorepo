@@ -17,7 +17,7 @@ const BoardGamePage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
 
     const [selectedTool, setSelectedTool] = React.useState<string | null>(null);
-    const [roomStatus, setRoomStatus] = useState<string>("waiting");
+    const [roomStatus, setRoomStatus] = useState<string>("started");
     const socket = useSocket();
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [isConnected, setIsConnected] = React.useState(false);
@@ -100,13 +100,13 @@ const BoardGamePage: React.FC = () => {
     useEffect(() => {
         const roomCode = id!;
 
-        const getStatus = async () => {
-            const statusResp = await getRoomStatus(roomCode);
-            console.log("Room status fetched:", statusResp.status);
-            setRoomStatus(statusResp.status);
-            setIsOwner(statusResp.owner === playerId);
-        };
-        getStatus();
+        // const getStatus = async () => {
+        //     const statusResp = await getRoomStatus(roomCode);
+        //     console.log("Room status fetched:", statusResp.status);
+        //     setRoomStatus(statusResp.status);
+        //     setIsOwner(statusResp.owner === playerId);
+        // };
+        // getStatus();
 
         const run = async () => {
             const resp = await socket.joinRoom({ roomCode, playerId: playerId! });
@@ -135,12 +135,13 @@ const BoardGamePage: React.FC = () => {
             socket.onDrawAction(handleReciveDrawAction);
             setIsConnected(true);
 
-            socket.onUserDrawing(({ playerId }) => {
+            socket.onUserDrawing(({ playerId, name }) => {
                 console.log("Usuario dibujando:", playerId);
                 setIsSomeoneDrawing(playerId);
+                console.log("Jugador que está dibujando:", name);
                 setMessages(prevMessages => [...prevMessages, {
                     name: '',
-                    message: `: ${playersRoom.find(p => p._id === playerId)?.name || 'Alguien'} está dibujando...`,
+                    message: ` ${name} está dibujando...`,
                     timestamp: Date.now(),
                     playerId: 'sistema'
                 }]);

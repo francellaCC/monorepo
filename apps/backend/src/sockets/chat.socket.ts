@@ -1,6 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { Player } from "../models/Player.model";
 import { time } from "console";
+import color from "colors";
 
 export const chatSocket = (io: Server, socket: Socket) => {
 
@@ -20,6 +21,7 @@ export const chatSocket = (io: Server, socket: Socket) => {
         message,
         timestamp: Date.now(),
       };
+   
 console.log("Salas del socket:", socket.rooms);
 
       console.log("Nuevo mensaje en sala", roomCode, "de", player.name + ":", message);

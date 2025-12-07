@@ -154,7 +154,9 @@ class SocketManager {
   }
 
 
-  public onUserDrawing(callback: (data: { playerId: string }) => void) {
+  public onUserDrawing(callback: (data: { playerId: string, name: string }) => void) {
+    console.log("Registrando listener para userIsDrawing");
+ 
     this.socket?.off("userIsDrawing");
     this.socket?.on("userIsDrawing", callback);
   }
@@ -221,7 +223,7 @@ export function useSocket() {
     onDrawAction: (callback: (message: IDrawAction[]) => void) => socketManager.onDrawAction(callback),
     sendDrawAction: (roomCode: string, msg: IDrawAction[]) => socketManager.sendDrawAction(roomCode, msg),
     sendUserDrawing: (roomCode: string, playerId: string) => socketManager.sendUserDrawing(roomCode, playerId),
-    onUserDrawing: (callback: (data: { playerId: string }) => void) => socketManager.onUserDrawing(callback),
+    onUserDrawing: (callback: (data: { playerId: string, name: string }) => void) => socketManager.onUserDrawing(callback),
     eraseLine: (roomCode: string, lineId: string) => socketManager.eraseLine(roomCode, lineId),
     onLineErased: (callback: (data: { lineId: string }) => void) => socketManager.onLineErased(callback),
     clearBoard: (roomCode: string) => socketManager.clearBoard(roomCode),
