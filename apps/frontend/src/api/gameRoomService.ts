@@ -1,11 +1,6 @@
-import type { GameRoomRequest, GameRoomResponse } from "../../types";
+import type { GameRoomRequest, GameRoomResponse, GameRoomStatusResponse } from "../../types";
 import { API } from "./axios";
 
-
-interface roomStatusResponse {
-  ok: boolean;
-  status: string;
-}
 
 export const createGameRoom = async ({ languageCode, playerId, code }: GameRoomRequest): Promise<GameRoomResponse> => {
   console.log("API URL:", import.meta.env.VITE_API_URL);
@@ -19,8 +14,8 @@ export const getGameRoom = async (code: GameRoomRequest['code']): Promise<GameRo
   return response.data
 }
 
-export const getRoomStatus = async (code: GameRoomRequest['code']): Promise<roomStatusResponse> => {
-  const response = await API.get<roomStatusResponse>(`rooms/status/${code}`);
+export const getRoomStatus = async (code: GameRoomRequest['code']): Promise<GameRoomStatusResponse> => {
+  const response = await API.get<GameRoomStatusResponse>(`rooms/status/${code}`);
   return response.data
 }
 
