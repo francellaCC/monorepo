@@ -153,6 +153,7 @@ class SocketManager {
     this.socket?.emit("userDrawing", { roomCode, playerId });
   }
 
+
   public onUserDrawing(callback: (data: { playerId: string }) => void) {
     this.socket?.off("userIsDrawing");
     this.socket?.on("userIsDrawing", callback);
@@ -164,6 +165,25 @@ class SocketManager {
     this.socket?.on("updatePlayers", callback);
   }
 
+  // Borrar línea
+  public eraseLine(roomCode: string, lineId: string) {
+    this.socket?.emit("eraseLine", { roomCode, lineId });
+  }
+
+  public onLineErased(callback: (data: { lineId: string }) => void) {
+    this.socket?.off("lineErased");
+    this.socket?.on("lineErased", callback);
+  }
+
+  // Limpiar pizarra
+  public clearBoard(roomCode: string) {
+    this.socket?.emit("clearBoard", { roomCode });
+  }
+
+  public onBoardCleared(callback: () => void) {
+    this.socket?.off("boardCleared");
+    this.socket?.on("boardCleared", callback);
+  }
 
 
   public offUpdatePlayers(callback: (data: { players: { _id: string; name: string; socketId: string }[] }) => void): void {
@@ -202,6 +222,10 @@ export function useSocket() {
     sendDrawAction: (roomCode: string, msg: IDrawAction[]) => socketManager.sendDrawAction(roomCode, msg),
     sendUserDrawing: (roomCode: string, playerId: string) => socketManager.sendUserDrawing(roomCode, playerId),
     onUserDrawing: (callback: (data: { playerId: string }) => void) => socketManager.onUserDrawing(callback),
+    eraseLine: (roomCode: string, lineId: string) => socketManager.eraseLine(roomCode, lineId),
+    onLineErased: (callback: (data: { lineId: string }) => void) => socketManager.onLineErased(callback),
+    clearBoard: (roomCode: string) => socketManager.clearBoard(roomCode),
+    onBoardCleared: (callback: () => void) => socketManager.onBoardCleared(callback),
   };
 }
 

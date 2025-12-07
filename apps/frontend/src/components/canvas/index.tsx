@@ -12,6 +12,9 @@ interface CanvasProps {
     brushSize?: number;
     status: string;
     currentColor?: string;
+    allLines?: IDrawAction[][];
+    setIsErasing?: (isErasing: boolean) => void;
+    onEraseLine?: (lineId: string) => void;
 }
 
 const Canvas: React.FC<CanvasProps> = ({
@@ -24,7 +27,10 @@ const Canvas: React.FC<CanvasProps> = ({
     newPathToDraw,
     brushSize,
     status,
-    currentColor
+    currentColor,
+    allLines = [],
+    onEraseLine,
+    setIsErasing,
 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [selectedToolState, setSelectedToolState] = React.useState<string | null>(null);
@@ -49,6 +55,42 @@ const Canvas: React.FC<CanvasProps> = ({
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, width, height);
     }, [width, height]);
+    // Redibujar TODAS las líneas almacenadas (allLines)
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Limpiar el canvas
+        ctx.clearRect(0, 0, width, height);
+
+        // Fondo blanco
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+
+        // Dibujar cada línea guardada
+        allLines.forEach(line => {
+            if (line.length === 0) return;
+
+            const first = line[0];
+
+            ctx.strokeStyle = first.color || "#000000";
+            ctx.lineWidth = first.brushSize || 5;
+
+            ctx.beginPath();
+            ctx.moveTo(first.x, first.y);
+
+            line.forEach(point => {
+                ctx.lineTo(point.x, point.y);
+            });
+
+            ctx.stroke();
+            ctx.closePath();
+        });
+
+    }, [allLines, width, height]);
 
     const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
         const canvas = canvasRef.current;
@@ -63,17 +105,20 @@ const Canvas: React.FC<CanvasProps> = ({
 
         ctx.beginPath();
         ctx.moveTo(x, y);
+        let lineId = '';
+
         let coorRecord: IDrawAction[] = []
         const handleMouseMove = (e: MouseEvent) => {
             const newX = e.clientX - rect.left;
             const newY = e.clientY - rect.top;
+            lineId = (crypto && (crypto as any).randomUUID) ? (crypto as any).randomUUID() : String(Date.now());
             coorRecord.push({
                 x: newX,
                 y: newY,
                 color: currentColor || '#000000',
                 brushSize: brushSize || 5,
                 tool: selectedToolState || 'BRUSH',
-                isStart: coorRecord.length === 0
+                lineId: lineId,
             });
             ctx.lineTo(newX, newY);
             ctx.stroke();
@@ -104,17 +149,21 @@ const Canvas: React.FC<CanvasProps> = ({
         if (selectedToolState == 'ERASER') {
             const canvas = canvasRef.current;
             if (!canvas) return;
+          
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
-            ctx.strokeStyle = '#FFFFFF'; // Set stroke color to white for erasing
+            ctx.strokeStyle = '#ffffff'; // Set stroke color to white for erasing
             ctx.lineWidth = brushSize || 5; // Set a larger line width for erasing
+    
+               
+                
         }
         if (selectedToolState == 'BRUSH') {
             const canvas = canvasRef.current;
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
-            ctx.strokeStyle = currentColor || '#000000';
+            ctx.strokeStyle = currentColor || '#ffffff';
             ctx.lineWidth = brushSize || 5;
 
         }
