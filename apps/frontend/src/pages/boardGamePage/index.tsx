@@ -27,6 +27,7 @@ const BoardGamePage: React.FC = () => {
   const [allLines, setAllLines] = useState<IDrawAction[][]>([]);
   const [isOwner, setIsOwner] = useState(false);
   const playerId = localStorage.getItem("playerId");
+  const [wordToGuess, setWordToGuess] = useState<string>("");
 
   // tools
   const [currentColor, setCurrentColor] = useState("#000000");
@@ -49,21 +50,34 @@ const BoardGamePage: React.FC = () => {
     const res = await updateRoomStatus(id!, "started");
     console.log("Room status updated:", res);
     setRoomStatus("started");
+   
+      // Notificar a los jugadores que la partida ha comenzado
+
+   
   };
 
+  useEffect(() => { 
+    if (roomStatus == "started") {
+      socket.showNewWord(id!);
+      socket.onNewWord(({ word }) => {
+       setWordToGuess(word)
+        console.log("Nueva palabra recibida:", word);
+      });
+    }
+  }, [roomStatus]);
   const handleReciveDrawAction = (drawActions: IDrawAction[]) => {
     setCurrentDrawing(drawActions);
     setAllLines((prev) => [...prev, drawActions]);
   };
 
   const handleEmitDrawAction = (msg: IDrawAction[]) => {
-    
+
     setCurrentDrawing(msg);
     socket.sendDrawAction(id!, msg);
     socket.sendUserDrawing(id!, localStorage.getItem("playerId")!);
   };
   const handleShareLink = () => {
-    
+
     const link = `${window.location.origin}/join/${id}`;
 
     navigator.clipboard
@@ -83,11 +97,11 @@ const BoardGamePage: React.FC = () => {
       "msg"
     ) as HTMLInputElement | null;
     const rawValue = msgElement?.value ?? "";
-    
+
     const messageInput = rawValue.toString().trim();
     const roomCode = id!;
     if (messageInput) {
-      
+
       socket.sendMessage(roomCode, playerId!, messageInput);
       setMessages((prevMessages) => [
         ...prevMessages,
@@ -99,8 +113,17 @@ const BoardGamePage: React.FC = () => {
         },
       ]);
       if (msgElement) msgElement.value = "";
+
+      handleGuessWord();
     }
   };
+
+  const handleGuessWord = () => {
+    // lógica para adivinar la palabra
+    const word = messages.find(msg => msg.message === wordToGuess)?.message;
+    
+    console.log("Palabra adivinada:", word);
+  }
 
   useEffect(() => {
     const roomCode = id!;
@@ -114,7 +137,7 @@ const BoardGamePage: React.FC = () => {
 
     const run = async () => {
       const resp = await socket.joinRoom({ roomCode, playerId: playerId! });
-     
+
       if (resp.ok) {
         setMessages(resp.messages || []);
       }
@@ -129,9 +152,8 @@ const BoardGamePage: React.FC = () => {
             ...prevMessages,
             {
               name: "Sistema",
-              message: `: ${
-                players.find((p) => p._id === playerId)?.name || "Desconocido"
-              } se ha unido al juego`,
+              message: `: ${players.find((p) => p._id === playerId)?.name || "Desconocido"
+                } se ha unido al juego`,
               timestamp: Date.now(),
               playerId: "sistema",
             },
@@ -139,7 +161,7 @@ const BoardGamePage: React.FC = () => {
         });
         run();
         socket.onMessage(({ name, message, timestamp }) => {
-          
+
           setMessages((prevMessages) => [
             ...prevMessages,
             { name, message, timestamp, playerId: "" },
@@ -149,9 +171,9 @@ const BoardGamePage: React.FC = () => {
         setIsConnected(true);
 
         socket.onUserDrawing(({ playerId, name }) => {
-          
+
           setIsSomeoneDrawing(playerId);
-          
+
           setMessages((prevMessages) => [
             ...prevMessages,
             {
@@ -208,7 +230,7 @@ const BoardGamePage: React.FC = () => {
         <div className="rounded-3xl bg-white shadow-lg p-4 mb-4 flex justify-between items-center">
           <div>
             <h1 className="font-semibold text-lg">Board Game Page: {id}</h1>
-            <WordMistery texto="Example" show={false} underlineCount={7} />
+            <WordMistery texto={wordToGuess} show={true} underlineCount={7} />
           </div>
         </div>
 

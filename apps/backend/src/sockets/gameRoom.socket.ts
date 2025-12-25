@@ -54,10 +54,10 @@ export const gameRoomSocket = (io: Server, socket: Socket) => {
      // Guardamos palabras SOLO en memoria backend
             roomsWords[roomCode] = words;
             roomsIndex[roomCode] = 0;
-
+console.log("Palabras cargadas para room", roomCode, ":", words);
             // Enviamos solo la PRIMERA palabra
             io.to(roomCode).emit("newWord", {
-                word: words[0]
+                word: words[0].text
             });
     } catch (error) {
       console.error("loadWords error:", error);
