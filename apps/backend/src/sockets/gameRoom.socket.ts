@@ -1,6 +1,8 @@
 import { Server, Socket } from "socket.io";
 import { GameRoom } from "../models/GameRoom.model";
 import { loadWordsFromDB } from "../helpers/loadWords";
+import color from "colors";
+
 
 
 const roomsWords: Record<string, any[]> = {};
@@ -42,7 +44,7 @@ export const gameRoomSocket = (io: Server, socket: Socket) => {
     }
   });
 
-  socket.on("loadWords",async({roomCode})=>{
+  socket.on("loadWords", async ({ roomCode }) => {
     try {
       const room = await GameRoom.findOne({ code: roomCode });
       if (!room) {
@@ -51,17 +53,49 @@ export const gameRoomSocket = (io: Server, socket: Socket) => {
       }
       const languageId = room.language._id;
       const words = await loadWordsFromDB(languageId, 5);
-     // Guardamos palabras SOLO en memoria backend
-            roomsWords[roomCode] = words;
-            roomsIndex[roomCode] = 0;
-console.log("Palabras cargadas para room", roomCode, ":", words);
-            // Enviamos solo la PRIMERA palabra
-            io.to(roomCode).emit("newWord", {
-                word: words[0].text
-            });
+      // Guardamos palabras SOLO en memoria backend
+      roomsWords[roomCode] = words;
+      roomsIndex[roomCode] = 0;
+      console.log("Palabras cargadas para room", roomCode, ":", words);
+      // Enviamos solo la PRIMERA palabra
+      io.to(roomCode).emit("newWord", {
+        word: words[0].text
+      });
     } catch (error) {
       console.error("loadWords error:", error);
       socket.emit("wordsLoaded", { ok: false, message: "Internal server error" });
     }
   });
+
+  socket.on("guessWord", ({ roomCode, guessedWord }) => {
+
+    console.log(color.blue(`Socket ${socket.id} guessed word "${guessedWord}" in room ${roomCode}`));
+    const words = roomsWords[roomCode];
+    const currentIndex = roomsIndex[roomCode];
+    if (!words || currentIndex === undefined) {
+      socket.emit("guessResult", { ok: false, message: "Words not loaded" });
+      return;
+    }
+    const currentWord = words[currentIndex];
+    if (guessedWord.toLowerCase() === currentWord.text.toLowerCase()) {
+      // Acierto
+      roomsIndex[roomCode] += 1;
+      const nextIndex = roomsIndex[roomCode];
+      if (nextIndex < words.length) {
+        console.log(color.green(`Correct guess! Moving to next word in room ${roomCode}`));
+        console.log("Next word:", words[nextIndex].text);
+        io.to(roomCode).emit("newWord", {
+          word: words[nextIndex].text
+        });
+      }else{
+        io.to(roomCode).emit("gameOver", { message: "All words guessed!" });
+        console.log(color.green(`All words guessed in room ${roomCode}. Game over.`));
+      }
+      socket.emit("guessResult", { ok: true, correct: true });
+    } else {
+      // Fallo
+      socket.emit("guessResult", { ok: true, correct: false });
+    }
+  });
+
 }
