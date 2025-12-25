@@ -156,7 +156,7 @@ class SocketManager {
 
   public onUserDrawing(callback: (data: { playerId: string, name: string }) => void) {
     console.log("Registrando listener para userIsDrawing");
- 
+
     this.socket?.off("userIsDrawing");
     this.socket?.on("userIsDrawing", callback);
   }
@@ -195,6 +195,28 @@ class SocketManager {
   public offMessage(callback: (data: { name: string, message: string, timestamp: number }) => void): void {
     this.socket?.off('newMessage', callback);
   }
+
+  public showNewWord(roomCode: string) {
+    this.socket?.emit("loadWords", { roomCode });
+  }
+
+  public onNewWord(callback: (data: { word: string }) => void) {
+    this.socket?.off("newWord");
+    this.socket?.on("newWord", callback);
+  }
+
+  public sendGuess(roomCode: string, guess: string, playerId: string) {
+    this.socket?.emit("guessWord", { roomCode, guess, playerId });
+  }
+
+  public onWordGuessed(callback: (data: any) => void) {
+    this.socket?.off("wordGuessed");
+    this.socket?.on("wordGuessed", callback);
+  }
+  public onWrongGuess(callback: () => void) {
+    this.socket?.off("wrongGuess");
+    this.socket?.on("wrongGuess", callback);
+}
 }
 
 // Hook personalizado para usar el socket manager
@@ -228,6 +250,11 @@ export function useSocket() {
     onLineErased: (callback: (data: { lineId: string }) => void) => socketManager.onLineErased(callback),
     clearBoard: (roomCode: string) => socketManager.clearBoard(roomCode),
     onBoardCleared: (callback: () => void) => socketManager.onBoardCleared(callback),
+    showNewWord: (word: string) => socketManager.showNewWord(word),
+    onNewWord: (callback: (data: { word: string }) => void) => socketManager.onNewWord(callback),
+    sendGuess: (roomCode: string, guess: string, playerId: string) => socketManager.sendGuess(roomCode, guess, playerId),
+    onWordGuessed: (callback: (data: any) => void) => socketManager.onWordGuessed(callback),
+    onWrongGuess: (callback: () => void) => socketManager.onWrongGuess(callback),
   };
 }
 
