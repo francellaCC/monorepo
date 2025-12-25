@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { maskWord } from '../../herlpers/maskWord';
 
 interface WordMisteryProps {
     texto: string;
@@ -7,13 +8,21 @@ interface WordMisteryProps {
 }
 
 const WordMistery: React.FC<WordMisteryProps> = ({ texto, show, underlineCount }) => {
-    if (show) {
-        return <span>{texto}</span>;
-    }
+    const [visible, setVisible] = useState("")
+
+    useEffect(() => {
+        if (show) {
+            setVisible(texto)
+        } else {
+            setVisible(maskWord(texto));
+        }
+    }, [show, texto, underlineCount]);
+   
 
     return (
         <span>
-            {'_ '.repeat(underlineCount) + ' ' + underlineCount}
+            {visible}
+        
         </span>
     );
 };
