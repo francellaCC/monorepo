@@ -50,21 +50,22 @@ const BoardGamePage: React.FC = () => {
     const res = await updateRoomStatus(id!, "started");
     console.log("Room status updated:", res);
     setRoomStatus("started");
-   
-      // Notificar a los jugadores que la partida ha comenzado
 
-   
+    // Notificar a los jugadores que la partida ha comenzado
+
+
   };
 
-  useEffect(() => { 
+  useEffect(() => {
     if (roomStatus == "started") {
       socket.showNewWord(id!);
       socket.onNewWord(({ word }) => {
-       setWordToGuess(word)
+        setWordToGuess(word)
         console.log("Nueva palabra recibida:", word);
       });
     }
   }, [roomStatus]);
+
   const handleReciveDrawAction = (drawActions: IDrawAction[]) => {
     setCurrentDrawing(drawActions);
     setAllLines((prev) => [...prev, drawActions]);
@@ -76,6 +77,7 @@ const BoardGamePage: React.FC = () => {
     socket.sendDrawAction(id!, msg);
     socket.sendUserDrawing(id!, localStorage.getItem("playerId")!);
   };
+
   const handleShareLink = () => {
 
     const link = `${window.location.origin}/join/${id}`;
@@ -98,32 +100,31 @@ const BoardGamePage: React.FC = () => {
     ) as HTMLInputElement | null;
     const rawValue = msgElement?.value ?? "";
 
-    const messageInput = rawValue.toString().trim();
+    const guessedWord = rawValue.toString().trim();
     const roomCode = id!;
-    if (messageInput) {
+    if (guessedWord) {
 
-      socket.sendMessage(roomCode, playerId!, messageInput);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          name: "Tú",
-          message: messageInput,
-          timestamp: Date.now(),
-          playerId: playerId!,
-        },
-      ]);
+      socket.sendMessage(roomCode, playerId!, guessedWord);
+      // setMessages((prevMessages) => [
+      //   ...prevMessages,
+      //   {
+      //     name: "Tú",
+      //     message: messageInput,
+      //     timestamp: Date.now(),
+      //     playerId: playerId!,
+      //   },
+      // ]);
+      console.log("Mensaje enviado:", guessedWord, playerId!);
+
+      socket.sendGuess(roomCode, guessedWord , playerId!);
+
       if (msgElement) msgElement.value = "";
 
-      handleGuessWord();
+
     }
   };
 
-  const handleGuessWord = () => {
-    // lógica para adivinar la palabra
-    const word = messages.find(msg => msg.message === wordToGuess)?.message;
-    
-    console.log("Palabra adivinada:", word);
-  }
+
 
   useEffect(() => {
     const roomCode = id!;
@@ -184,6 +185,23 @@ const BoardGamePage: React.FC = () => {
             },
           ]);
         });
+        socket.onWordGuessed((guessResult) => {
+          
+          if (guessResult.correct) {
+            console.log(guessResult.playerId)
+            console.log("name", playersRoom.find((p) => p._id === guessResult.playerId)?.name)
+            setMessages((prevMessages)=>[
+               ...prevMessages,
+              {
+                name: "Sistema",
+                message:` ${playersRoom.find((p) => p._id === guessResult.playerId)?.name || "Alguien"} ha adivinado la palabra! 🎉`,
+                timestamp: Date.now(),
+                playerId: "sistema",
+              }
+            ])
+          }
+
+        });
         socket.onLineErased(({ lineId }) => {
           setAllLines((prev) =>
             prev.filter((line) =>
@@ -203,6 +221,7 @@ const BoardGamePage: React.FC = () => {
 
     return () => {
       socket.leaveRoom(id!);
+      socket.offMessage(() => { })
       // Limpiar solo el listener de draw action
       const socketInstance = socket.getSocket();
       if (socketInstance) {

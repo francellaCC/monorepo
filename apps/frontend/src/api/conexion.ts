@@ -205,18 +205,24 @@ class SocketManager {
     this.socket?.on("newWord", callback);
   }
 
-  public sendGuess(roomCode: string, guess: string, playerId: string) {
-    this.socket?.emit("guessWord", { roomCode, guess, playerId });
+  public sendGuess(roomCode: string, guessedWord: string, playerId: string) {
+    console.log("Enviando guess:", { roomCode, guessedWord });
+    this.socket?.emit("guessWord", {
+      roomCode,
+      guessedWord,
+      playerId
+    });
   }
 
   public onWordGuessed(callback: (data: any) => void) {
-    this.socket?.off("wordGuessed");
-    this.socket?.on("wordGuessed", callback);
+    this.socket?.off("guessResult");
+    this.socket?.on("guessResult", callback);
   }
   public onWrongGuess(callback: () => void) {
     this.socket?.off("wrongGuess");
     this.socket?.on("wrongGuess", callback);
-}
+  }
+
 }
 
 // Hook personalizado para usar el socket manager

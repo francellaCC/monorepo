@@ -67,9 +67,22 @@ export const gameRoomSocket = (io: Server, socket: Socket) => {
     }
   });
 
-  socket.on("guessWord", ({ roomCode, guessedWord }) => {
+  socket.on("guessWord", async ({ roomCode, guessedWord, playerId }) => {
 
-    console.log(color.blue(`Socket ${socket.id} guessed word "${guessedWord}" in room ${roomCode}`));
+    const room = await GameRoom.findOne({ code: roomCode });
+
+    console.log(color.blue(`Socket ${socket.id} guessed word "${guessedWord}" in room ${roomCode} with playerId ${playerId} `));
+
+    if(!roomsWords[roomCode]){
+      socket.emit("guessResult", { ok: false, message: "Room words not found" });
+      return;
+    }
+
+    if(!room?.players.includes(playerId)){
+      socket.emit("guessResult", { ok: false, message: "Player not in room" });
+      return;
+    }
+
     const words = roomsWords[roomCode];
     const currentIndex = roomsIndex[roomCode];
     if (!words || currentIndex === undefined) {
@@ -91,7 +104,7 @@ export const gameRoomSocket = (io: Server, socket: Socket) => {
         io.to(roomCode).emit("gameOver", { message: "All words guessed!" });
         console.log(color.green(`All words guessed in room ${roomCode}. Game over.`));
       }
-      socket.emit("guessResult", { ok: true, correct: true });
+      socket.emit("guessResult", { ok: true, correct: true, playerId });
     } else {
       // Fallo
       socket.emit("guessResult", { ok: true, correct: false });
