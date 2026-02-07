@@ -110,7 +110,7 @@ class SocketManager {
   }
 
   // New method to join a room
-  public joinRoom(data: { roomCode: string; playerId: string }): Promise<any> {
+  public joinRoom(data: { roomCode: string; playerId: string, currentWord?: string, currentIndex?: number, status?: string }): Promise<any> {
     return new Promise((resolve, reject) => {
       this.socket?.emit("joinRoom", data, (response: any) => {
         if (response?.ok) resolve(response);
@@ -134,7 +134,6 @@ class SocketManager {
     });
   }
   public onMessage(callback: (data: { name: string, message: string, timestamp: number }) => void) {
-    this.socket?.off("newMessage");
     this.socket?.on("newMessage", callback);
   }
 
@@ -145,7 +144,7 @@ class SocketManager {
 
   public onDrawAction(callback: (drawActions: IDrawAction[]) => void): void {
     // Remover listener anterior para evitar duplicados
-    this.socket?.off('getDraw');
+ 
     this.socket?.on('getDraw', callback);
   }
 
@@ -163,7 +162,6 @@ class SocketManager {
   public onUpdatePlayers(
     callback: (data: { players: { _id: string; name: string; socketId: string }[] }) => void
   ): void {
-    this.socket?.off("updatePlayers");
     this.socket?.on("updatePlayers", callback);
   }
 
@@ -173,7 +171,6 @@ class SocketManager {
   }
 
   public onLineErased(callback: (data: { lineId: string }) => void) {
-    this.socket?.off("lineErased");
     this.socket?.on("lineErased", callback);
   }
 
@@ -183,7 +180,6 @@ class SocketManager {
   }
 
   public onBoardCleared(callback: () => void) {
-    this.socket?.off("boardCleared");
     this.socket?.on("boardCleared", callback);
   }
 
@@ -201,22 +197,25 @@ class SocketManager {
   }
 
   public onNewWord(callback: (data: { word: string }) => void) {
-    this.socket?.off("newWord");
     this.socket?.on("newWord", callback);
   }
 
-  public sendGuess(roomCode: string, guess: string, playerId: string) {
-    this.socket?.emit("guessWord", { roomCode, guess, playerId });
+  public sendGuess(roomCode: string, guessedWord: string, playerId: string) {
+    console.log("Enviando guess:", { roomCode, guessedWord });
+    this.socket?.emit("guessWord", {
+      roomCode,
+      guessedWord,
+      playerId
+    });
   }
 
   public onWordGuessed(callback: (data: any) => void) {
-    this.socket?.off("wordGuessed");
-    this.socket?.on("wordGuessed", callback);
+    this.socket?.on("guessResult", callback);
   }
   public onWrongGuess(callback: () => void) {
-    this.socket?.off("wrongGuess");
     this.socket?.on("wrongGuess", callback);
-}
+  }
+
 }
 
 // Hook personalizado para usar el socket manager
