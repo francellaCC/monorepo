@@ -70,7 +70,7 @@ export const getGameRoom = async (req: Request, res: Response) => {
       ok: true,
       newRoom :{
         id: room._id,
-        status: room.status,
+        status: "playing",
         code: room.code
       }
     })
